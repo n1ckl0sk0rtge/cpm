@@ -16,6 +16,7 @@ func GetConfigStructure() *map[string]string {
 
 const (
 	image     string = "image"
+	tag       string = "tag"
 	parameter string = "parameter"
 	command   string = "command"
 	path      string = "path"
@@ -23,6 +24,10 @@ const (
 
 func ContainerImage(name string) string {
 	return Container + "." + name + "." + image
+}
+
+func ContainerTag(name string) string {
+	return Container + "." + name + "." + tag
 }
 
 func ContainerParameter(name string) string {
