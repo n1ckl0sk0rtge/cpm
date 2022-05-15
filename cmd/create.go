@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -22,7 +23,7 @@ Create a new command.
 `,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) != 2 {
 			err := fmt.Errorf("not enough arguments provided, need 2 got %d", len(args))
 			fmt.Println(err)
 			os.Exit(1)
@@ -62,9 +63,9 @@ func init() {
 		"provide container runtime, otherwise the value from the config will be used.")
 }
 
-func create(cmd *cobra.Command, args []string) {
+func create(_ *cobra.Command, args []string) {
 
-	containerRuntime := viper.Get("runtime")
+	containerRuntime := viper.Get(config.Runtime)
 	if len(Entity.Runtime) > 0 {
 		containerRuntime = Entity.Runtime
 	}
@@ -75,7 +76,7 @@ func create(cmd *cobra.Command, args []string) {
 		containerRuntime, "run", Entity.Parameter, "--name", name, image, Entity.Command, "\"$@\"")
 
 	// create executable
-	filePath := fmt.Sprintf("%s%s", viper.Get("path"), name)
+	filePath := fmt.Sprintf("%s%s", viper.Get(config.Runtime), name)
 
 	executable, err := os.Create(filePath)
 
@@ -97,6 +98,7 @@ func create(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 	}
 
+	// make the file executable
 	chmodCommand := fmt.Sprintf("chmod +x %s", filePath)
 	chmod := exec.Command("sh", "-c", chmodCommand)
 	_, err = chmod.Output()
@@ -104,4 +106,18 @@ func create(cmd *cobra.Command, args []string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// add a link to the command in the configuration
+	commandKey := config.Container + "." + name + "."
+
+	viper.Set(commandKey+"image", image)
+	viper.Set(commandKey+"parameter", Entity.Parameter)
+	viper.Set(commandKey+"command", Entity.Command)
+
+	err = viper.WriteConfig()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 }
