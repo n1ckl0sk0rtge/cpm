@@ -18,6 +18,7 @@ const (
 	image     string = "image"
 	parameter string = "parameter"
 	command   string = "command"
+	path      string = "path"
 )
 
 func ContainerImage(name string) string {
@@ -30,4 +31,8 @@ func ContainerParameter(name string) string {
 
 func ContainerCommand(name string) string {
 	return Container + "." + name + "." + command
+}
+
+func ContainerPath(name string) string {
+	return Container + "." + name + "." + path
 }

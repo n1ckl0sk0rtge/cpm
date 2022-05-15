@@ -111,6 +111,7 @@ func create(_ *cobra.Command, args []string) {
 	viper.Set(config.ContainerImage(name), image)
 	viper.Set(config.ContainerParameter(name), entity.Parameter)
 	viper.Set(config.ContainerCommand(name), entity.Command)
+	viper.Set(config.ContainerPath(name), filePath)
 
 	err = viper.WriteConfig()
 
