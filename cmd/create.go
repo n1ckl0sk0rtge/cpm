@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
+	"os/exec"
 )
 
 // createCmd represents the create command
@@ -32,9 +33,7 @@ Create a new command.
 }
 
 type entity struct {
-	Name      string
 	Parameter string
-	Image     string
 	Command   string
 	Runtime   string
 }
@@ -53,10 +52,10 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 
-	createCmd.Flags().StringVarP(&Entity.Parameter, "parameter", "p", "",
-		"set parameter for running the container")
+	createCmd.Flags().StringVarP(&Entity.Parameter, "parameter", "p", "-i -t --rm",
+		"set parameter for running the container. Default is '-t -i --rm'")
 
-	createCmd.Flags().StringVarP(&Entity.Image, "command", "c", "",
+	createCmd.Flags().StringVarP(&Entity.Command, "command", "c", "",
 		"set the command that should be executed in the container")
 
 	createCmd.Flags().StringVarP(&Entity.Runtime, "runtime", "r", "",
@@ -64,9 +63,45 @@ func init() {
 }
 
 func create(cmd *cobra.Command, args []string) {
-	name, image := args[0], args[1]
-	fmt.Println(name, image)
 
-	value := viper.Get("runtime")
-	fmt.Println(value)
+	containerRuntime := viper.Get("runtime")
+	if len(Entity.Runtime) > 0 {
+		containerRuntime = Entity.Runtime
+	}
+
+	name, image := args[0], args[1]
+
+	execCommand := fmt.Sprintln(
+		containerRuntime, "run", Entity.Parameter, "--name", name, image, Entity.Command, "\"$@\"")
+
+	// create executable
+	filePath := fmt.Sprintf("%s%s", viper.Get("path"), name)
+
+	executable, err := os.Create(filePath)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer func(executable *os.File) {
+		err := executable.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(executable)
+
+	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
+	_, err = executable.WriteString(fileContent)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	chmodCommand := fmt.Sprintf("chmod +x %s", filePath)
+	chmod := exec.Command("sh", "-c", chmodCommand)
+	_, err = chmod.Output()
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }
