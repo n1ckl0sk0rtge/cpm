@@ -32,11 +32,12 @@ func list(_ *cobra.Command, args []string) {
 			viper.Get(config.ContainerImage(key)).(string),
 			viper.Get(config.ContainerParameter(key)).(string),
 			viper.Get(config.ContainerCommand(key)).(string),
+			viper.Get(config.ContainerPath(key)).(string),
 		})
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"NAME", "IMAGE", "PARAMETER", "COMMAND"})
+	table.SetHeader([]string{"NAME", "IMAGE", "PARAMETER", "COMMAND", "PATH"})
 	table.SetBorder(false)
 	table.SetRowLine(false)
 	table.SetColumnSeparator("")
