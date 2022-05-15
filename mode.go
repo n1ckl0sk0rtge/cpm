@@ -4,13 +4,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
 
-const DevMode = "CPM_DEV_MODE"
-
 func init() {
 	log.Println("dev mode is enabled!")
-	os.Setenv(DevMode, "true")
+	err := os.Setenv("CPM_DEV_MODE", "true")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
