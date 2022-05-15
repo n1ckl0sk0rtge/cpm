@@ -1,5 +1,6 @@
 build:
-	go generate
-	go build
+	go build -tags dev
 run:
 	go run cpm.go
+release:
+	go build
