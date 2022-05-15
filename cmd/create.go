@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // createCmd represents the create command
@@ -19,7 +20,10 @@ Create a new command.
 
  NAME is the name of the new command, which you will use to execute the command. 
 
- IMAGE is the OCI image o which the command is based on.
+ IMAGE is the OCI image o which the command is based on. To use the latest version you can 
+just select the image name, for example 'redis' or you can explicitly set the latest-tag 'redis:latest'.
+In case you want to select a specific version you can either specify the version by selecting providing 
+the image tag together with image 'redis:6.2' or you can use the flag '-t 6.2' to set a version.
 `,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -34,6 +38,7 @@ Create a new command.
 }
 
 type flags struct {
+	Tag       string
 	Parameter string
 	Command   string
 	Runtime   string
@@ -52,6 +57,8 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
+	createCmd.Flags().StringVarP(&entity.Tag, "tag", "t", "",
+		"set a version (image-tag) for the nwe command")
 
 	createCmd.Flags().StringVarP(&entity.Parameter, "parameter", "p", "-i -t --rm",
 		"set parameter for running the container. Default is '-t -i --rm'")
@@ -60,12 +67,24 @@ func init() {
 		"set the command that should be executed in the container")
 
 	createCmd.Flags().StringVarP(&entity.Runtime, "runtime", "r", "",
-		"provide container runtime, otherwise the value from the config will be used.")
+		"provide container runtime, otherwise the value from the config will be used")
 }
 
 func create(_ *cobra.Command, args []string) {
 
 	name, image := args[0], args[1]
+
+	version := "latest"
+	if strings.Contains(image, ":") {
+		parts := strings.Split(image, ":")
+		if len(parts) != 2 {
+			err := fmt.Errorf("provided image is not valid. Please chack format")
+			fmt.Println(err)
+		}
+		image, version = parts[0], parts[1]
+	} else if len(entity.Tag) > 0 {
+		version = entity.Tag
+	}
 
 	containerRuntime := viper.Get(config.Runtime)
 	if len(entity.Runtime) > 0 {
@@ -107,8 +126,8 @@ func create(_ *cobra.Command, args []string) {
 	}
 
 	// add a link to the command in the configuration
-
 	viper.Set(config.ContainerImage(name), image)
+	viper.Set(config.ContainerTag(name), version)
 	viper.Set(config.ContainerParameter(name), entity.Parameter)
 	viper.Set(config.ContainerCommand(name), entity.Command)
 	viper.Set(config.ContainerPath(name), filePath)
