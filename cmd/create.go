@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -22,7 +23,7 @@ Create a new command.
 `,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) != 2 {
 			err := fmt.Errorf("not enough arguments provided, need 2 got %d", len(args))
 			fmt.Println(err)
 			os.Exit(1)
@@ -32,13 +33,13 @@ Create a new command.
 	Run: create,
 }
 
-type entity struct {
+type flags struct {
 	Parameter string
 	Command   string
 	Runtime   string
 }
 
-var Entity entity
+var entity flags
 
 func init() {
 	rootCmd.AddCommand(createCmd)
@@ -52,31 +53,27 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 
-	createCmd.Flags().StringVarP(&Entity.Parameter, "parameter", "p", "-i -t --rm",
+	createCmd.Flags().StringVarP(&entity.Parameter, "parameter", "p", "-i -t --rm",
 		"set parameter for running the container. Default is '-t -i --rm'")
 
-	createCmd.Flags().StringVarP(&Entity.Command, "command", "c", "",
+	createCmd.Flags().StringVarP(&entity.Command, "command", "c", "",
 		"set the command that should be executed in the container")
 
-	createCmd.Flags().StringVarP(&Entity.Runtime, "runtime", "r", "",
+	createCmd.Flags().StringVarP(&entity.Runtime, "runtime", "r", "",
 		"provide container runtime, otherwise the value from the config will be used.")
 }
 
-func create(cmd *cobra.Command, args []string) {
-
-	containerRuntime := viper.Get("runtime")
-	if len(Entity.Runtime) > 0 {
-		containerRuntime = Entity.Runtime
-	}
+func create(_ *cobra.Command, args []string) {
 
 	name, image := args[0], args[1]
 
-	execCommand := fmt.Sprintln(
-		containerRuntime, "run", Entity.Parameter, "--name", name, image, Entity.Command, "\"$@\"")
+	containerRuntime := viper.Get(config.Runtime)
+	if len(entity.Runtime) > 0 {
+		containerRuntime = entity.Runtime
+	}
 
 	// create executable
-	filePath := fmt.Sprintf("%s%s", viper.Get("path"), name)
-
+	filePath := fmt.Sprintf("%s%s", viper.Get(config.ExecPath), name)
 	executable, err := os.Create(filePath)
 
 	if err != nil {
@@ -90,6 +87,9 @@ func create(cmd *cobra.Command, args []string) {
 		}
 	}(executable)
 
+	execCommand := fmt.Sprintln(
+		containerRuntime, "run", entity.Parameter, "--name", name, image, entity.Command, "\"$@\"")
+
 	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
 	_, err = executable.WriteString(fileContent)
 
@@ -97,6 +97,7 @@ func create(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 	}
 
+	// make the file executable
 	chmodCommand := fmt.Sprintf("chmod +x %s", filePath)
 	chmod := exec.Command("sh", "-c", chmodCommand)
 	_, err = chmod.Output()
@@ -104,4 +105,17 @@ func create(cmd *cobra.Command, args []string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// add a link to the command in the configuration
+
+	viper.Set(config.ContainerImage(name), image)
+	viper.Set(config.ContainerParameter(name), entity.Parameter)
+	viper.Set(config.ContainerCommand(name), entity.Command)
+
+	err = viper.WriteConfig()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 }
