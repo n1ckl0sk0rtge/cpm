@@ -1,12 +1,9 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -67,5 +64,9 @@ func init() {
 }
 
 func create(cmd *cobra.Command, args []string) {
+	name, image := args[0], args[1]
+	fmt.Println(name, image)
 
+	value := viper.Get("runtime")
+	fmt.Println(value)
 }
