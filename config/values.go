@@ -13,3 +13,21 @@ func GetConfigStructure() *map[string]string {
 	config[Container] = "{}"
 	return &config
 }
+
+const (
+	image     string = "image"
+	parameter string = "parameter"
+	command   string = "command"
+)
+
+func ContainerImage(name string) string {
+	return Container + "." + name + "." + image
+}
+
+func ContainerParameter(name string) string {
+	return Container + "." + name + "." + parameter
+}
+
+func ContainerCommand(name string) string {
+	return Container + "." + name + "." + command
+}
