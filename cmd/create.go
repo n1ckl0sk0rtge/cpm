@@ -26,14 +26,6 @@ In case you want to select a specific version you can either specify the version
 the image tag together with image 'redis:6.2' or you can use the flag '-t 6.2' to set a version.
 `,
 
-	PreRun: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			err := fmt.Errorf("not enough arguments provided, need 2 got %d", len(args))
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	},
-
 	Run: create,
 }
 
