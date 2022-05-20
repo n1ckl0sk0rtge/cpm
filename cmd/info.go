@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/buger/jsonparser"
 	"github.com/n1ckl0sk0rtge/cpm/config"
+	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -18,8 +19,7 @@ var infoCmd = &cobra.Command{
 	Long:  `A longer description that spans multiple`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			err := fmt.Errorf("not enough arguments provided, need 1 got %d", len(args))
+		if err := helper.Available(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -30,11 +30,6 @@ var infoCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(infoCmd)
-}
-
-type mData struct {
-	Id       int    `json:"Id"`
-	RepoTags string `json:"RepoTags"`
 }
 
 func info(_ *cobra.Command, args []string) {
@@ -84,18 +79,18 @@ func info(_ *cobra.Command, args []string) {
 		arch = ""
 	}
 
-	var os string
-	os, err = jsonparser.GetString(metaData, "[0]", "Os")
+	var operatingSystem string
+	operatingSystem, err = jsonparser.GetString(metaData, "[0]", "Os")
 	if err != nil {
 		fmt.Println(err)
-		os = ""
+		operatingSystem = ""
 	}
 
 	fmt.Println(command)
 	fmt.Printf("image:\t\t%s\n", fullImage)
 	fmt.Printf("digest:\t\t%s\n", digest)
 	fmt.Printf("size:\t\t%d byte\n", size)
-	fmt.Printf("OS/Arch:\t%s/%s\n", os, arch)
+	fmt.Printf("OS/Arch:\t%s/%s\n", operatingSystem, arch)
 }
 
 func getCommandConfig(command string) bool {
