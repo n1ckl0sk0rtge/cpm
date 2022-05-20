@@ -74,14 +74,6 @@ not contain dots.
 Specifying an attribute name that already exists will replace teh value of existing values.
 `,
 
-	PreRun: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
-			err := fmt.Errorf("not enough arguments provided, need 2 got %d", len(args))
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	},
-
 	Run: func(cmd *cobra.Command, args []string) {
 		key := args[0]
 		value := args[1]
