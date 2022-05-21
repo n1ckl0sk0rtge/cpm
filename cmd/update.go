@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // updateCmd represents the update command
@@ -66,6 +67,9 @@ func updateCommand(c string) {
 		return
 	}
 
+	output := fmt.Sprintf("Check for updates for %s...", c)
+	fmt.Println(output)
+
 	image := viper.Get(config.ContainerImage(c)).(string)
 	tag := viper.Get(config.ContainerTag(c)).(string)
 	imageRef := image + ":" + tag
@@ -89,7 +93,7 @@ func updateCommand(c string) {
 		return
 	}
 
-	fmt.Println(imageInspect[0].RepoDigests[0])
+	localDigest := imageInspect[0].RepoDigests[0]
 
 	// fetch remote digest
 
@@ -112,6 +116,31 @@ func updateCommand(c string) {
 		return
 	}
 
-	fmt.Println(manifest.Maniftests[0].Digest)
+	// Todo check for different os/arch
+	remoteDigest := manifest.Maniftests[0].Digest
+
+	if !strings.Contains(localDigest, remoteDigest) {
+		output = fmt.Sprintf("update availabe for %s!", c)
+		fmt.Println(output)
+
+		output = fmt.Sprintf("download new version %s@%s", image, remoteDigest)
+
+		pullNewVersionCommand :=
+			fmt.Sprintf("%s pull %s@%s", viper.Get(config.Runtime), image, remoteDigest)
+		pullCommand := exec.Command("sh", "-c", pullNewVersionCommand)
+		pull, err := pullCommand.Output()
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(string(pull))
+
+	} else {
+		output = fmt.Sprintf("%s is up to date", c)
+		fmt.Println(output)
+		return
+	}
 
 }
