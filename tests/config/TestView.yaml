@@ -1,0 +1,15 @@
+container:
+  golang@1.17:
+    command: go
+    image: golang
+    parameter: -v "$PWD":/usr/src/myapp -w /usr/src/myapp
+    path: /usr/local/bin/golang@1.17
+    tag: 1.17-stretch
+  redis-cli:
+    command: redis-cli
+    image: redis
+    parameter: -i -t --rm
+    path: /usr/local/bin/redis-cli
+    tag: latest
+path: /usr/local/bin/
+runtime: podman

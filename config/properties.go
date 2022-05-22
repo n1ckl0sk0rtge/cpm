@@ -11,6 +11,10 @@ type configValues struct {
 	Type string
 }
 
+func GetFilePath(config *configValues) string {
+	return config.Dir + config.Name + "." + config.Type
+}
+
 func GetConfigProperties() *configValues {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -21,6 +25,14 @@ func GetConfigProperties() *configValues {
 	return &configValues{
 		Dir:  dir,
 		Name: "cpm-conf",
+		Type: "yaml",
+	}
+}
+
+func GetTestConfigProperties(testName string) *configValues {
+	return &configValues{
+		Dir:  "../tests/config/",
+		Name: testName,
 		Type: "yaml",
 	}
 }
