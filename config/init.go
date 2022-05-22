@@ -23,10 +23,8 @@ func InitConfig() {
 			fmt.Println(err)
 		}
 	}
-
-	var conf = GetConfigProperties()
-
 	// init config
+	var conf = GetConfigProperties()
 	Instance = viper.NewWithOptions(viper.KeyDelimiter(KeyDelimiter))
 	Instance.SetConfigName(conf.Name)
 	Instance.SetConfigType(conf.Type)
