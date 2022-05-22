@@ -1,7 +1,5 @@
 package config
 
-import "github.com/spf13/viper"
-
 const (
 	Container string = "container"
 	Runtime   string = "runtime"
@@ -35,7 +33,7 @@ const (
 )
 
 func CommandExists(name string) bool {
-	return viper.IsSet(Container + "." + name)
+	return Instance.IsSet(Container + KeyDelimiter + name)
 }
 
 func ContainerImage(name string) string {
