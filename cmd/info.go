@@ -40,10 +40,12 @@ func info(_ *cobra.Command, args []string) {
 		return
 	}
 
-	image := config.Instance.Get(config.ContainerImage(command))
+	image := config.Instance.GetString(config.ContainerImage(command))
+	tag := config.Instance.GetString(config.ContainerTag(command))
+	fullImage := image + ":" + tag
 
 	// get more infos about the image
-	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", config.Instance.Get(config.Runtime), image)
+	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", config.Instance.Get(config.Runtime), fullImage)
 	imageInfo := exec.Command("sh", "-c", getImageInfosCommand)
 	metaData, err := imageInfo.Output()
 
@@ -51,14 +53,15 @@ func info(_ *cobra.Command, args []string) {
 		fmt.Println(err)
 	}
 
-	fullImage, err := jsonparser.GetString(metaData, "[0]", "RepoTags", "[0]")
+	var imageReference string
+	imageReference, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[0]")
 	if err != nil {
 		fmt.Println(err)
-		fullImage = image.(string)
+		imageReference = fullImage
 	}
 
 	var digest string
-	digest, err = jsonparser.GetString(metaData, "[0]", "Digest")
+	digest, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[1]")
 	if err != nil {
 		fmt.Println(err)
 		digest = ""
@@ -86,7 +89,7 @@ func info(_ *cobra.Command, args []string) {
 	}
 
 	fmt.Println(command)
-	fmt.Printf("image:\t\t%s\n", fullImage)
+	fmt.Printf("image:\t\t%s\n", imageReference)
 	fmt.Printf("digest:\t\t%s\n", digest)
 	fmt.Printf("size:\t\t%d byte\n", size)
 	fmt.Printf("OS/Arch:\t%s/%s\n", operatingSystem, arch)
