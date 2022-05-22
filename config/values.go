@@ -6,6 +6,8 @@ const (
 	ExecPath  string = "path"
 )
 
+const KeyDelimiter = "::"
+
 func GetConfigStructure() *map[string]string {
 	config := make(map[string]string)
 	config[Runtime] = "docker"
@@ -23,21 +25,21 @@ const (
 )
 
 func ContainerImage(name string) string {
-	return Container + "." + name + "." + image
+	return Container + KeyDelimiter + name + KeyDelimiter + image
 }
 
 func ContainerTag(name string) string {
-	return Container + "." + name + "." + tag
+	return Container + KeyDelimiter + name + KeyDelimiter + tag
 }
 
 func ContainerParameter(name string) string {
-	return Container + "." + name + "." + parameter
+	return Container + KeyDelimiter + name + KeyDelimiter + parameter
 }
 
 func ContainerCommand(name string) string {
-	return Container + "." + name + "." + command
+	return Container + KeyDelimiter + name + KeyDelimiter + command
 }
 
 func ContainerPath(name string) string {
-	return Container + "." + name + "." + path
+	return Container + KeyDelimiter + name + KeyDelimiter + path
 }

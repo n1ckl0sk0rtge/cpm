@@ -4,13 +4,9 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 )
-
-var conf = config.GetConfigProperties()
 
 // configCmd represents the config command
 var configCmd = &cobra.Command{
@@ -21,7 +17,7 @@ var configCmd = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(config.InitConfig)
 
 	rootCmd.AddCommand(configCmd)
 
@@ -47,6 +43,7 @@ var viewCmd = &cobra.Command{
 	Long:  `Display config settings`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		var conf = config.GetConfigProperties()
 		configFile := conf.Dir + conf.Name + "." + conf.Type
 
 		filename, _ := filepath.Abs(configFile)
@@ -81,56 +78,15 @@ Specifying an attribute name that already exists will replace teh value of exist
 		configStructure := *config.GetConfigStructure()
 
 		if _, ok := configStructure[key]; ok {
-			viper.Set(key, value)
+			config.Instance.Set(key, value)
 		} else {
 			err := fmt.Errorf("the provided key is not valid, Please ensure to provid an existing key")
 			fmt.Println(err)
 		}
 
-		err := viper.WriteConfig()
+		err := config.Instance.WriteConfig()
 		if err != nil {
 			fmt.Println(err)
 		}
 	},
-}
-
-func initConfig() {
-	// init directory
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	const applicationFolder string = "/.cpm"
-	if _, err := os.Stat(home + applicationFolder); os.IsNotExist(err) {
-		err := os.Mkdir(home+applicationFolder, 0755)
-		if err != nil {
-			err = fmt.Errorf("could not create application folder '%s', %s", applicationFolder, err)
-			fmt.Println(err)
-		}
-	}
-
-	// init config
-	viper.SetConfigName(conf.Name)
-	viper.SetConfigType(conf.Type)
-	viper.AddConfigPath(conf.Dir)
-
-	configFile := conf.Dir + conf.Name + "." + conf.Type
-	if err := viper.ReadInConfig(); err != nil { // Find and read the config file
-		if _, err := os.Create(configFile); err != nil { // perm 0666
-			err = fmt.Errorf("could not create config file '%s', %s", configFile, err)
-			fmt.Println(err)
-		}
-
-		// set default
-		values := config.GetConfigStructure()
-		for key, value := range *values {
-			viper.SetDefault(key, value)
-		}
-
-		err = viper.WriteConfig()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
 }

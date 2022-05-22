@@ -6,7 +6,6 @@ import (
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"os/exec"
 )
@@ -41,10 +40,10 @@ func info(_ *cobra.Command, args []string) {
 		return
 	}
 
-	image := viper.Get(config.ContainerImage(command))
+	image := config.Instance.Get(config.ContainerImage(command))
 
 	// get more infos about the image
-	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", viper.Get(config.Runtime), image)
+	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", config.Instance.Get(config.Runtime), image)
 	imageInfo := exec.Command("sh", "-c", getImageInfosCommand)
 	metaData, err := imageInfo.Output()
 
@@ -95,7 +94,7 @@ func info(_ *cobra.Command, args []string) {
 
 func getCommandConfig(command string) bool {
 
-	containers := viper.Get(config.Container).(map[string]interface{})
+	containers := config.Instance.Get(config.Container).(map[string]interface{})
 
 	for key := range containers {
 		if key == command {
