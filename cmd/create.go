@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"os/exec"
 	"strings"
@@ -41,14 +40,6 @@ var entity flags
 func init() {
 	rootCmd.AddCommand(createCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	createCmd.Flags().StringVarP(&entity.Tag, "tag", "t", "",
 		"set a version (image-tag) for the nwe command")
 
@@ -66,6 +57,16 @@ func create(_ *cobra.Command, args []string) {
 
 	name, image := args[0], args[1]
 
+	if strings.Contains(name, "::") {
+		err := fmt.Errorf("name must not contain string '::'")
+		fmt.Println(err)
+		return
+	} else if strings.Contains(image, "::") {
+		err := fmt.Errorf("image must not contain string '::'")
+		fmt.Println(err)
+		return
+	}
+
 	version := "latest"
 	if strings.Contains(image, ":") {
 		parts := strings.Split(image, ":")
@@ -78,23 +79,25 @@ func create(_ *cobra.Command, args []string) {
 		version = entity.Tag
 	}
 
-	containerRuntime := viper.Get(config.Runtime)
+	containerRuntime := config.Instance.Get(config.Runtime)
 	if len(entity.Runtime) > 0 {
 		containerRuntime = entity.Runtime
 	}
 
 	// create executable
-	filePath := fmt.Sprintf("%s%s", viper.Get(config.ExecPath), name)
+	filePath := fmt.Sprintf("%s%s", config.Instance.Get(config.ExecPath), name)
 	executable, err := os.Create(filePath)
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	defer func(executable *os.File) {
 		err := executable.Close()
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 	}(executable)
 
@@ -106,6 +109,7 @@ func create(_ *cobra.Command, args []string) {
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	// make the file executable
@@ -115,19 +119,21 @@ func create(_ *cobra.Command, args []string) {
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	// add a link to the command in the configuration
-	viper.Set(config.ContainerImage(name), image)
-	viper.Set(config.ContainerTag(name), version)
-	viper.Set(config.ContainerParameter(name), entity.Parameter)
-	viper.Set(config.ContainerCommand(name), entity.Command)
-	viper.Set(config.ContainerPath(name), filePath)
+	config.Instance.Set(config.ContainerImage(name), image)
+	config.Instance.Set(config.ContainerTag(name), version)
+	config.Instance.Set(config.ContainerParameter(name), entity.Parameter)
+	config.Instance.Set(config.ContainerCommand(name), entity.Command)
+	config.Instance.Set(config.ContainerPath(name), filePath)
 
-	err = viper.WriteConfig()
+	err = config.Instance.WriteConfig()
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 }

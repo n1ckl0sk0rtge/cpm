@@ -4,7 +4,6 @@ import (
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 )
 
@@ -22,18 +21,18 @@ func init() {
 
 func list(_ *cobra.Command, _ []string) {
 
-	containers := viper.Get(config.Container).(map[string]interface{})
+	containers := config.Instance.Get(config.Container).(map[string]interface{})
 
 	var data [][]string
 
 	for key := range containers {
 		data = append(data, []string{
 			key,
-			viper.Get(config.ContainerImage(key)).(string),
-			viper.Get(config.ContainerTag(key)).(string),
-			viper.Get(config.ContainerParameter(key)).(string),
-			viper.Get(config.ContainerCommand(key)).(string),
-			viper.Get(config.ContainerPath(key)).(string),
+			config.Instance.GetString(config.ContainerImage(key)),
+			config.Instance.GetString(config.ContainerTag(key)),
+			config.Instance.GetString(config.ContainerParameter(key)),
+			config.Instance.GetString(config.ContainerCommand(key)),
+			config.Instance.GetString(config.ContainerPath(key)),
 		})
 	}
 
