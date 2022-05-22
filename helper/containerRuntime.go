@@ -3,13 +3,12 @@ package helper
 import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
-	"github.com/spf13/viper"
 	"os/exec"
 	"strings"
 )
 
 func Available() error {
-	runtimeString := viper.Get(config.Runtime).(string)
+	runtimeString := config.Instance.Get(config.Runtime).(string)
 
 	switch runtimeString {
 	case "podman":
