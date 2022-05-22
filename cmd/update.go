@@ -6,7 +6,6 @@ import (
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"os/exec"
 	"strings"
@@ -50,7 +49,7 @@ type imageInspect []struct {
 }
 
 type manifest struct {
-	Maniftests []struct {
+	Manifests []struct {
 		Digest   string `json:"digest"`
 		Platform struct {
 			Architecture string `json:"architecture"`
@@ -70,12 +69,14 @@ func updateCommand(c string) {
 	output := fmt.Sprintf("Check for updates for %s...", c)
 	fmt.Println(output)
 
-	image := viper.Get(config.ContainerImage(c)).(string)
-	tag := viper.Get(config.ContainerTag(c)).(string)
+	image := config.Instance.Get(config.ContainerImage(c)).(string)
+	tag := config.Instance.Get(config.ContainerTag(c)).(string)
 	imageRef := image + ":" + tag
 
+	helper.Dprintln(imageRef)
+
 	getCurrentDigestCommand :=
-		fmt.Sprintf("%s inspect %s", viper.Get(config.Runtime), imageRef)
+		fmt.Sprintf("%s inspect %s", config.Instance.Get(config.Runtime), imageRef)
 	currentDigestCommand := exec.Command("sh", "-c", getCurrentDigestCommand)
 	currentDigest, err := currentDigestCommand.Output()
 
@@ -93,12 +94,13 @@ func updateCommand(c string) {
 		return
 	}
 
-	localDigest := imageInspect[0].RepoDigests[0]
+	digests := imageInspect[0].RepoDigests
+	helper.DprintlnSlice(digests)
 
 	// fetch remote digest
 
 	getRemoteDigestsCommand :=
-		fmt.Sprintf("%s manifest inspect %s", viper.Get(config.Runtime), imageRef)
+		fmt.Sprintf("%s manifest inspect %s", config.Instance.Get(config.Runtime), imageRef)
 	remoteDigestsCommand := exec.Command("sh", "-c", getRemoteDigestsCommand)
 	remoteDigests, err := remoteDigestsCommand.Output()
 
@@ -117,16 +119,26 @@ func updateCommand(c string) {
 	}
 
 	// Todo check for different os/arch
-	remoteDigest := manifest.Maniftests[0].Digest
+	remoteDigest := manifest.Manifests[0].Digest
+	helper.Dprintln(remoteDigest)
 
-	if !strings.Contains(localDigest, remoteDigest) {
+	localDigest := ""
+	for _, repoDigest := range imageInspect[0].RepoDigests {
+		if strings.Contains(repoDigest, remoteDigest) {
+			localDigest = repoDigest
+		}
+	}
+	helper.Dprintln(localDigest)
+
+	if len(localDigest) == 0 {
 		output = fmt.Sprintf("update availabe for %s!", c)
 		fmt.Println(output)
 
 		output = fmt.Sprintf("download new version %s@%s", image, remoteDigest)
 
 		pullNewVersionCommand :=
-			fmt.Sprintf("%s pull %s@%s", viper.Get(config.Runtime), image, remoteDigest)
+			fmt.Sprintf("%s pull %s@%s", config.Instance.Get(config.Runtime), image, remoteDigest)
+		helper.Dprintln(pullNewVersionCommand)
 		pullCommand := exec.Command("sh", "-c", pullNewVersionCommand)
 		pull, err := pullCommand.Output()
 
