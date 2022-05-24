@@ -3,6 +3,9 @@ package config
 import (
 	"log"
 	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 )
 
 type configValues struct {
@@ -21,17 +24,20 @@ func GetConfigProperties() *configValues {
 		log.Fatalln("Could not get home directory %w", err)
 	}
 
-	var dir string = home + "/.cpm/"
 	return &configValues{
-		Dir:  dir,
+		Dir:  home + "/.cpm/",
 		Name: "cpm-conf",
 		Type: "yaml",
 	}
 }
 
 func GetTestConfigProperties(testName string) *configValues {
+	_, b, _, _ := runtime.Caller(0)
+	d := path.Join(path.Dir(b))
+	projectDir := filepath.Dir(d)
+
 	return &configValues{
-		Dir:  "../tests/config/",
+		Dir:  projectDir + "/tests/",
 		Name: testName,
 		Type: "yaml",
 	}
