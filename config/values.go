@@ -3,7 +3,7 @@ package config
 const (
 	Container string = "container"
 	Runtime   string = "runtime"
-	ExecPath  string = "path"
+	ExecPath  string = "filePath"
 )
 
 const KeyDelimiter = "::"
@@ -16,12 +16,20 @@ func GetConfigStructure() *map[string]string {
 	return &config
 }
 
+func GetTestConfigStructure(runtime string, testDir string) *map[string]string {
+	config := make(map[string]string)
+	config[Runtime] = runtime
+	config[ExecPath] = testDir
+	config[Container] = "{}"
+	return &config
+}
+
 const (
 	image     string = "image"
 	tag       string = "tag"
 	parameter string = "parameter"
 	command   string = "command"
-	path      string = "path"
+	filePath  string = "filePath"
 )
 
 func ContainerImage(name string) string {
@@ -41,5 +49,5 @@ func ContainerCommand(name string) string {
 }
 
 func ContainerPath(name string) string {
-	return Container + KeyDelimiter + name + KeyDelimiter + path
+	return Container + KeyDelimiter + name + KeyDelimiter + filePath
 }
