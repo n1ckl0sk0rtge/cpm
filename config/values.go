@@ -16,10 +16,10 @@ func GetConfigStructure() *map[string]string {
 	return &config
 }
 
-func GetTestConfigStructure(runtime string, testDir string) *map[string]string {
+func GetTestConfigStructure(runtime string, testExecPath string) *map[string]string {
 	config := make(map[string]string)
 	config[Runtime] = runtime
-	config[ExecPath] = testDir
+	config[ExecPath] = testExecPath
 	config[Container] = "{}"
 	return &config
 }
