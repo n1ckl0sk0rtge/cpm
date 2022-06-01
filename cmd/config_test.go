@@ -15,7 +15,7 @@ func TestView(t *testing.T) {
 	output := helper.CatchStdOut(t, func() {
 		view(file)
 	})
-	assert.Equal(t, output, "container: '{}'\nfilepath: /Users/nkoertge/_projects/cpm/tests/\nruntime: podman\n")
+	assert.Equal(t, "container: '{}'\nfilepath: /Users/nkoertge/_projects/cpm/tests/\nruntime: podman\n", output)
 }
 
 func TestSet(t *testing.T) {
@@ -33,5 +33,5 @@ func TestSet(t *testing.T) {
 	output := helper.CatchStdOut(t, func() {
 		view(file)
 	})
-	assert.Equal(t, output, "container: '{}'\nfilepath: /Users/nkoertge/_projects/cpm/tests/\nruntime: testRuntime\n")
+	assert.Equal(t, "container: '{}'\nfilepath: /Users/nkoertge/_projects/cpm/tests/\nruntime: testRuntime\n", output)
 }

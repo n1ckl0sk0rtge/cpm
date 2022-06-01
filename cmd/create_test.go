@@ -38,7 +38,7 @@ func TestCreate(t *testing.T) {
 	filename, _ := filepath.Abs(testDir + name)
 	alias, err := ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\npodman run -i -t --rm --name "+name+" busybox:latest  \"$@\"\n")
+	assert.Equal(t, "#!/bin/sh\npodman run -i -t --rm --name "+name+" busybox:latest  \"$@\"\n", string(alias))
 	_ = os.Remove(testDir + name)
 
 	name = "testRuntime"
@@ -47,7 +47,7 @@ func TestCreate(t *testing.T) {
 	filename, _ = filepath.Abs(testDir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\ntestRuntime run  --name "+name+" busybox:latest  \"$@\"\n")
+	assert.Equal(t, "#!/bin/sh\ntestRuntime run  --name "+name+" busybox:latest  \"$@\"\n", string(alias))
 	_ = os.Remove(testDir + name)
 
 	name = "testTag"
@@ -56,7 +56,7 @@ func TestCreate(t *testing.T) {
 	filename, _ = filepath.Abs(testDir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\npodman run  --name "+name+" busybox:1.0.0  \"$@\"\n")
+	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:1.0.0  \"$@\"\n", string(alias))
 	_ = os.Remove(testDir + name)
 
 	name = "testCommand"
@@ -65,7 +65,7 @@ func TestCreate(t *testing.T) {
 	filename, _ = filepath.Abs(testDir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\npodman run  --name "+name+" busybox:latest sh \"$@\"\n")
+	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:latest sh \"$@\"\n", string(alias))
 	_ = os.Remove(testDir + name)
 
 	name = "testParameter"
@@ -74,7 +74,7 @@ func TestCreate(t *testing.T) {
 	filename, _ = filepath.Abs(testDir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\npodman run -i --name "+name+" busybox:latest  \"$@\"\n")
+	assert.Equal(t, "#!/bin/sh\npodman run -i --name "+name+" busybox:latest  \"$@\"\n", string(alias))
 	_ = os.Remove(testDir + name)
 
 }
