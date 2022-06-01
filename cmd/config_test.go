@@ -9,9 +9,11 @@ import (
 )
 
 func TestView(t *testing.T) {
-	conf := config.GetTestConfigProperties("init")
-	file := config.GetFilePath(conf)
+	test := "testView"
+	conf := config.InitTestConfig(test)
+	defer config.RemoveTestConfig(test)
 
+	file := config.GetFilePath(conf)
 	output := helper.CatchStdOut(t, func() {
 		view(file)
 	})
@@ -19,16 +21,16 @@ func TestView(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
-	conf := config.GetTestConfigProperties("init")
+	test := "testSet"
+	conf := config.InitTestConfig(test)
+	defer config.RemoveTestConfig(test)
+
 	file := config.GetFilePath(conf)
 
 	key := config.Runtime
 	value := fmt.Sprintf("testRuntime")
 
 	set(nil, []string{key, value})
-
-	// set back to default
-	defer set(nil, []string{key, "podman"})
 
 	output := helper.CatchStdOut(t, func() {
 		view(file)
