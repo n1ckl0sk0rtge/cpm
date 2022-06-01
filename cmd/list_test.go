@@ -28,6 +28,7 @@ func TestList(t *testing.T) {
 
 	name := "busybox"
 	// create command
+	entity = flags{}
 	create(nil, []string{name, "busybox:latest"})
 	// remove command add the end
 	defer func(name string) {
@@ -41,6 +42,6 @@ func TestList(t *testing.T) {
 	output := helper.CatchStdOut(t, func() {
 		list(nil, nil)
 	})
-	assert.Equal(t, "  NAME     IMAGE    TAG     PARAMETER   COMMAND  PATH                                         \n  busybox  busybox  latest  -i -t --rm           /Users/nkoertge/_projects/cpm/tests/busybox  \n", output)
+	assert.Equal(t, "  NAME     IMAGE    TAG     PARAMETER  COMMAND  PATH                                         \n  busybox  busybox  latest                      /Users/nkoertge/_projects/cpm/tests/busybox  \n", output)
 
 }
