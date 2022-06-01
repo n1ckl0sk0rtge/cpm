@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
+	"math/rand"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -57,6 +59,7 @@ func create(_ *cobra.Command, args []string) {
 
 	name, image := args[0], args[1]
 
+	// sanitize input in respect to viper config key delimiter
 	if strings.Contains(name, "::") {
 		err := fmt.Errorf("name must not contain string '::'")
 		fmt.Println(err)
@@ -77,7 +80,18 @@ func create(_ *cobra.Command, args []string) {
 		}
 		image, version = parts[0], parts[1]
 	} else if len(entity.Tag) > 0 {
+		// if the tag was provided via flag use this instate
 		version = entity.Tag
+	}
+
+	// check name fulfills regex for container execution
+	// otherwise, rename container
+	containerName := name
+	if matched, _ := regexp.MatchString(`^[a-zA-Z\d][a-zA-Z\d_.-]*$`, name); matched != true {
+		// change container name to image name plus random numbers
+		// example: golang2357
+		random := fmt.Sprintf("%d", rand.Int())
+		containerName = image + random
 	}
 
 	containerRuntime := config.Instance.Get(config.Runtime)
@@ -103,7 +117,7 @@ func create(_ *cobra.Command, args []string) {
 	}(executable)
 
 	execCommand := fmt.Sprintln(
-		containerRuntime, "run", entity.Parameter, "--name", name, image+":"+version, entity.Command, "\"$@\"")
+		containerRuntime, "run", entity.Parameter, "--name", containerName, image+":"+version, entity.Command, "\"$@\"")
 
 	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
 	_, err = executable.WriteString(fileContent)
