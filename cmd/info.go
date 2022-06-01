@@ -58,7 +58,7 @@ func info(_ *cobra.Command, args []string) {
 	var imageReference string
 	imageReference, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[0]")
 	if err != nil {
-		fullImage = image.(string)
+		fullImage = image
 	}
 
 	var digest string
