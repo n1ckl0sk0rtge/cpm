@@ -54,7 +54,16 @@ func initConfig(location string, values *configValues, configStructure *map[stri
 	}
 }
 
-func InitTestConfig() {
-	config := GetTestConfigProperties("init")
-	initConfig(config.Dir, config, GetTestConfigStructure("podman", config.Dir))
+func InitTestConfig(name string) *configValues {
+	config := GetTestConfigProperties(name)
+	structure := GetTestConfigStructure("podman", config.Dir)
+	initConfig(config.Dir, config, structure)
+	return config
+}
+
+func RemoveTestConfig(name string) {
+	values := GetTestConfigProperties(name)
+	if err := os.Remove(GetFilePath(values)); err != nil {
+		fmt.Println(err)
+	}
 }
