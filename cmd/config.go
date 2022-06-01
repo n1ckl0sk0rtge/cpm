@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -27,12 +26,13 @@ func init() {
 
 var viewCmd = &cobra.Command{
 	Use:   "view",
+	Args:  cobra.ExactArgs(0),
 	Short: "Display config settings",
 	Long:  `Display config settings`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var conf = config.GetConfigProperties()
 		configFilePath := config.GetFilePath(conf)
-		fmt.Println(view(configFilePath))
+		view(configFilePath)
 	},
 }
 
@@ -50,34 +50,33 @@ not contain dots.
 
 Specifying an attribute name that already exists will replace teh value of existing values.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
-		value := args[1]
-		set(key, value, config.Instance)
-	},
+	Run: set,
 }
 
-func view(configFilePath string) string {
-	filename, _ := filepath.Abs(configFilePath)
+func view(file string) {
+	filename, _ := filepath.Abs(file)
 	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return string(yamlFile)
+
+	fmt.Print(string(yamlFile))
 }
 
-func set(key string, value string, viper *viper.Viper) {
+func set(_ *cobra.Command, args []string) {
+	key := args[0]
+	value := args[1]
 
 	configStructure := *config.GetConfigStructure()
 
 	if _, ok := configStructure[key]; ok {
-		viper.Set(key, value)
+		config.Instance.Set(key, value)
 	} else {
 		err := fmt.Errorf("the provided key is not valid, Please ensure to provid an existing key")
 		fmt.Println(err)
 	}
 
-	err := viper.WriteConfig()
+	err := config.Instance.WriteConfig()
 	if err != nil {
 		fmt.Println(err)
 	}
