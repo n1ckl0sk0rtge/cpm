@@ -11,6 +11,10 @@ import (
 )
 
 func TestInfoCommandNotExists(t *testing.T) {
+	test := "testInfoCommandNotExists"
+	_ = config.InitTestConfig(test)
+	defer config.RemoveTestConfig(test)
+
 	command := "busybox"
 	output := helper.CatchStdOut(t, func() {
 		info(nil, []string{command})
@@ -19,6 +23,10 @@ func TestInfoCommandNotExists(t *testing.T) {
 }
 
 func TestInfo(t *testing.T) {
+	test := "testInfo"
+	conf := config.InitTestConfig(test)
+	defer config.RemoveTestConfig(test)
+
 	name := "busybox"
 	image := name + "@sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87"
 	// download image
@@ -30,7 +38,6 @@ func TestInfo(t *testing.T) {
 		t.Fail()
 	}
 
-	testDir := config.GetTestConfigProperties("init").Dir
 	// create command
 	create(nil, []string{name, "busybox:latest"})
 	// remove command add the end
@@ -40,7 +47,7 @@ func TestInfo(t *testing.T) {
 			fmt.Println(err)
 			t.Fail()
 		}
-	}(testDir + name)
+	}(conf.Dir + name)
 
 	// get the infos from created command
 	command := "busybox"
