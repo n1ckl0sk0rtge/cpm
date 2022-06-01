@@ -4,3 +4,5 @@ run:
 	go run cpm.go
 release:
 	go build
+test:
+	go test ./...

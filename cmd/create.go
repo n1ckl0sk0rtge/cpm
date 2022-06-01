@@ -71,8 +71,9 @@ func create(_ *cobra.Command, args []string) {
 	if strings.Contains(image, ":") {
 		parts := strings.Split(image, ":")
 		if len(parts) != 2 {
-			err := fmt.Errorf("provided image is not valid. Please chack format")
+			err := fmt.Errorf("provided image is not valid. Please check format")
 			fmt.Println(err)
+			return
 		}
 		image, version = parts[0], parts[1]
 	} else if len(entity.Tag) > 0 {
@@ -102,7 +103,7 @@ func create(_ *cobra.Command, args []string) {
 	}(executable)
 
 	execCommand := fmt.Sprintln(
-		containerRuntime, "run", entity.Parameter, "--name", name, image, entity.Command, "\"$@\"")
+		containerRuntime, "run", entity.Parameter, "--name", name, image+":"+version, entity.Command, "\"$@\"")
 
 	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
 	_, err = executable.WriteString(fileContent)

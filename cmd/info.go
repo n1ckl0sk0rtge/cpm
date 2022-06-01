@@ -50,41 +50,38 @@ func info(_ *cobra.Command, args []string) {
 	metaData, err := imageInfo.Output()
 
 	if err != nil {
-		fmt.Println(err)
+		e := fmt.Errorf("could not insepect image, check if image is availabe, %s", err)
+		fmt.Println(e)
+		return
 	}
 
 	var imageReference string
 	imageReference, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[0]")
 	if err != nil {
-		fmt.Println(err)
-		imageReference = fullImage
+		fullImage = image.(string)
 	}
 
 	var digest string
 	digest, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[1]")
 	if err != nil {
-		fmt.Println(err)
 		digest = ""
 	}
 
 	var size int64
 	size, err = jsonparser.GetInt(metaData, "[0]", "Size")
 	if err != nil {
-		fmt.Println(err)
 		size = 0
 	}
 
 	var arch string
 	arch, err = jsonparser.GetString(metaData, "[0]", "Architecture")
 	if err != nil {
-		fmt.Println(err)
 		arch = ""
 	}
 
 	var operatingSystem string
 	operatingSystem, err = jsonparser.GetString(metaData, "[0]", "Os")
 	if err != nil {
-		fmt.Println(err)
 		operatingSystem = ""
 	}
 
@@ -97,9 +94,13 @@ func info(_ *cobra.Command, args []string) {
 
 func getCommandConfig(command string) bool {
 
-	containers := config.Instance.Get(config.Container).(map[string]interface{})
+	containers := config.Instance.Get(config.Container)
 
-	for key := range containers {
+	if containers == "{}" {
+		return false
+	}
+
+	for key := range containers.(map[string]interface{}) {
 		if key == command {
 			return true
 		}

@@ -10,6 +10,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
+	Args:  cobra.ExactArgs(0),
 	Short: "A brief description of your command",
 	Long:  `A longer description that spans`,
 	Run:   list,
@@ -21,19 +22,21 @@ func init() {
 
 func list(_ *cobra.Command, _ []string) {
 
-	containers := config.Instance.Get(config.Container).(map[string]interface{})
+	containers := config.Instance.Get(config.Container)
 
 	var data [][]string
 
-	for key := range containers {
-		data = append(data, []string{
-			key,
-			config.Instance.GetString(config.ContainerImage(key)),
-			config.Instance.GetString(config.ContainerTag(key)),
-			config.Instance.GetString(config.ContainerParameter(key)),
-			config.Instance.GetString(config.ContainerCommand(key)),
-			config.Instance.GetString(config.ContainerPath(key)),
-		})
+	if !(containers == "{}") {
+		for key := range containers.(map[string]interface{}) {
+			data = append(data, []string{
+				key,
+				config.Instance.GetString(config.ContainerImage(key)),
+				config.Instance.GetString(config.ContainerTag(key)),
+				config.Instance.GetString(config.ContainerParameter(key)),
+				config.Instance.GetString(config.ContainerCommand(key)),
+				config.Instance.GetString(config.ContainerPath(key)),
+			})
+		}
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)

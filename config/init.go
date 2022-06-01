@@ -16,23 +16,26 @@ func InitConfig() {
 	}
 
 	const applicationFolder string = "/.cpm"
-	if _, err := os.Stat(home + applicationFolder); os.IsNotExist(err) {
-		err := os.Mkdir(home+applicationFolder, 0755)
+
+	location := home + applicationFolder
+	initConfig(location, GetConfigProperties(), GetConfigStructure())
+}
+
+func initConfig(location string, values *configValues, configStructure *map[string]string) {
+	if _, err := os.Stat(location); os.IsNotExist(err) {
+		err := os.Mkdir(location, 0755)
 		if err != nil {
-			err = fmt.Errorf("could not create application folder '%s', %s", applicationFolder, err)
+			err = fmt.Errorf("could not create application folder '%s', %s", location, err)
 			fmt.Println(err)
 		}
 	}
-
-	var conf = GetConfigProperties()
-
 	// init config
 	Instance = viper.NewWithOptions(viper.KeyDelimiter(KeyDelimiter))
-	Instance.SetConfigName(conf.Name)
-	Instance.SetConfigType(conf.Type)
-	Instance.AddConfigPath(conf.Dir)
+	Instance.SetConfigName(values.Name)
+	Instance.SetConfigType(values.Type)
+	Instance.AddConfigPath(values.Dir)
 
-	configFile := conf.Dir + conf.Name + "." + conf.Type
+	configFile := GetFilePath(values)
 	if err := Instance.ReadInConfig(); err != nil { // Find and read the config file
 		if _, err := os.Create(configFile); err != nil { // perm 0666
 			err = fmt.Errorf("could not create config file '%s', %s", configFile, err)
@@ -40,14 +43,27 @@ func InitConfig() {
 		}
 
 		// set default
-		values := GetConfigStructure()
-		for key, value := range *values {
-			viper.SetDefault(key, value)
+		for key, value := range *configStructure {
+			Instance.SetDefault(key, value)
 		}
 
 		err = Instance.WriteConfig()
 		if err != nil {
 			fmt.Println(err)
 		}
+	}
+}
+
+func InitTestConfig(name string) *configValues {
+	config := GetTestConfigProperties(name)
+	structure := GetTestConfigStructure("podman", config.Dir)
+	initConfig(config.Dir, config, structure)
+	return config
+}
+
+func RemoveTestConfig(name string) {
+	values := GetTestConfigProperties(name)
+	if err := os.Remove(GetFilePath(values)); err != nil {
+		fmt.Println(err)
 	}
 }
