@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/stretchr/testify/assert"
@@ -12,8 +11,6 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-
-	fmt.Println(config.Instance.AllKeys())
 
 	// Test name contains unwanted char's
 	output := helper.CatchStdOut(t, func() {
