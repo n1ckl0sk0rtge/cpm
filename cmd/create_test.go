@@ -36,19 +36,48 @@ func TestCreate(t *testing.T) {
 	testDir := config.GetTestConfigProperties("init").Dir
 
 	// Tests
-
-	create(nil, []string{"busybox", "busybox:latest"})
-	filename, _ := filepath.Abs(testDir + "busybox")
+	name := "busybox"
+	create(nil, []string{name, "busybox:latest"})
+	filename, _ := filepath.Abs(testDir + name)
 	alias, err := ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\npodman run -i -t --rm --name busybox busybox  \"$@\"\n")
-	_ = os.Remove(testDir + "busybox")
+	assert.Equal(t, string(alias), "#!/bin/sh\npodman run -i -t --rm --name "+name+" busybox:latest  \"$@\"\n")
+	_ = os.Remove(testDir + name)
 
-	create(nil, []string{"busybox", "busybox:latest"})
-	filename, _ = filepath.Abs(testDir + "busybox")
+	name = "testRuntime"
+	entity = flags{Runtime: "testRuntime"}
+	create(nil, []string{name, "busybox:latest"})
+	filename, _ = filepath.Abs(testDir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
-	assert.Equal(t, string(alias), "#!/bin/sh\npodman run -i -t --rm --name busybox busybox  \"$@\"\n")
-	_ = os.Remove(testDir + "busybox")
+	assert.Equal(t, string(alias), "#!/bin/sh\ntestRuntime run  --name "+name+" busybox:latest  \"$@\"\n")
+	_ = os.Remove(testDir + name)
+
+	name = "testTag"
+	entity = flags{Tag: "1.0.0"}
+	create(nil, []string{name, "busybox"})
+	filename, _ = filepath.Abs(testDir + name)
+	alias, err = ioutil.ReadFile(filename)
+	assert.NoError(t, err)
+	assert.Equal(t, string(alias), "#!/bin/sh\npodman run  --name "+name+" busybox:1.0.0  \"$@\"\n")
+	_ = os.Remove(testDir + name)
+
+	name = "testCommand"
+	entity = flags{Command: "sh"}
+	create(nil, []string{name, "busybox"})
+	filename, _ = filepath.Abs(testDir + name)
+	alias, err = ioutil.ReadFile(filename)
+	assert.NoError(t, err)
+	assert.Equal(t, string(alias), "#!/bin/sh\npodman run  --name "+name+" busybox:latest sh \"$@\"\n")
+	_ = os.Remove(testDir + name)
+
+	name = "testParameter"
+	entity = flags{Parameter: "-i"}
+	create(nil, []string{name, "busybox"})
+	filename, _ = filepath.Abs(testDir + name)
+	alias, err = ioutil.ReadFile(filename)
+	assert.NoError(t, err)
+	assert.Equal(t, string(alias), "#!/bin/sh\npodman run -i --name "+name+" busybox:latest  \"$@\"\n")
+	_ = os.Remove(testDir + name)
 
 }

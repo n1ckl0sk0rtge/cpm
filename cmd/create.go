@@ -103,7 +103,7 @@ func create(_ *cobra.Command, args []string) {
 	}(executable)
 
 	execCommand := fmt.Sprintln(
-		containerRuntime, "run", entity.Parameter, "--name", name, image, entity.Command, "\"$@\"")
+		containerRuntime, "run", entity.Parameter, "--name", name, image+":"+version, entity.Command, "\"$@\"")
 
 	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
 	_, err = executable.WriteString(fileContent)
