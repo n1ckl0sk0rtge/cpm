@@ -58,7 +58,7 @@ func TestInfo(t *testing.T) {
 	if err := helper.Available(); err != nil {
 		assert.Equal(t, "could not insepect image, check if image is availabe, exit status 125\n", output)
 	} else {
-		assert.Equal(t, "busybox\nimage:\t\tdocker.io/library/busybox:latest\ndigest:\t\tsha256:ebadf81a7f2146e95f8c850ad7af8cf9755d31cdba380a8ffd5930fba5996095\nsize:\t\t1464006 byte\nOS/Arch:\tlinux/amd64\n", output)
+		assert.Equal(t, "busybox\nimage:\t\tdocker.io/library/busybox:latest\ndigest:\t\tdocker.io/library/busybox@sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87\nsize:\t\t1464006 byte\nOS/Arch:\tlinux/amd64\n", output)
 	}
 
 }

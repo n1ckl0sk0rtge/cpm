@@ -21,6 +21,19 @@ func init() {
 }
 
 func list(_ *cobra.Command, _ []string) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"NAME", "IMAGE", "TAG", "PARAMETER", "COMMAND", "PATH"})
+	table.SetBorder(false)
+	table.SetRowLine(false)
+	table.SetColumnSeparator("")
+	table.SetHeaderLine(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.AppendBulk(GetCommands())
+	table.Render()
+}
+
+func GetCommands() [][]string {
 
 	containers := config.Instance.Get(config.Container)
 
@@ -39,15 +52,5 @@ func list(_ *cobra.Command, _ []string) {
 		}
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"NAME", "IMAGE", "TAG", "PARAMETER", "COMMAND", "PATH"})
-	table.SetBorder(false)
-	table.SetRowLine(false)
-	table.SetColumnSeparator("")
-	table.SetHeaderLine(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.AppendBulk(data)
-	table.Render()
-
+	return data
 }

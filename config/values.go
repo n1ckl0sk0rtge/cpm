@@ -3,7 +3,7 @@ package config
 const (
 	Container string = "container"
 	Runtime   string = "runtime"
-	ExecPath  string = "filePath"
+	ExecPath  string = "path"
 )
 
 const KeyDelimiter = "::"
@@ -29,8 +29,12 @@ const (
 	tag       string = "tag"
 	parameter string = "parameter"
 	command   string = "command"
-	filePath  string = "filePath"
+	filePath  string = "path"
 )
+
+func CommandExists(name string) bool {
+	return Instance.IsSet(Container + KeyDelimiter + name)
+}
 
 func ContainerImage(name string) string {
 	return Container + KeyDelimiter + name + KeyDelimiter + image
