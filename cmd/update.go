@@ -40,7 +40,11 @@ func init() {
 }
 
 func updateAll() {
-
+	data := GetCommands()
+	for _, value := range data {
+		name := value[0]
+		updateCommand(name)
+	}
 }
 
 type imageInspect []struct {
@@ -135,19 +139,21 @@ func updateCommand(c string) {
 		fmt.Println(output)
 
 		output = fmt.Sprintf("download new version %s@%s", image, remoteDigest)
+		fmt.Println(output)
 
 		pullNewVersionCommand :=
 			fmt.Sprintf("%s pull %s", config.Instance.Get(config.Runtime), imageRef)
 		helper.Dprintln(pullNewVersionCommand)
 		pullCommand := exec.Command("sh", "-c", pullNewVersionCommand)
-		pull, err := pullCommand.Output()
+		_, err := pullCommand.Output()
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		fmt.Println(string(pull))
+		output = fmt.Sprintf("%s updated successfuly", c)
+		fmt.Println(output)
 
 	} else {
 		output = fmt.Sprintf("%s is up to date", c)
