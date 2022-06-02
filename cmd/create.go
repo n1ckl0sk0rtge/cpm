@@ -100,7 +100,7 @@ func create(_ *cobra.Command, args []string) {
 	}
 
 	// create executable
-	filePath := fmt.Sprintf("%s%s", config.Instance.Get(config.ExecPath), name)
+	filePath := fmt.Sprintf("%s%s", config.Instance.GetString(config.ExecPath), name)
 	executable, err := os.Create(filePath)
 
 	if err != nil {
