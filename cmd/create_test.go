@@ -10,11 +10,9 @@ import (
 	"testing"
 )
 
-var testDir = config.GetTestConfigProperties("init").Dir
-
 func TestCreate(t *testing.T) {
 	test := "testCreate"
-	_ = config.InitTestConfig(test)
+	conf := config.InitTestConfig(test)
 	defer config.RemoveTestConfig(test)
 
 	// Test name contains unwanted char's
@@ -39,49 +37,49 @@ func TestCreate(t *testing.T) {
 	name := "testRuntime"
 	entity = flags{Runtime: "testRuntime"}
 	create(nil, []string{name, "busybox:latest"})
-	filename, _ := filepath.Abs(testDir + name)
+	filename, _ := filepath.Abs(conf.Dir + name)
 	alias, err := ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, "#!/bin/sh\ntestRuntime run  --name "+name+" busybox:latest  \"$@\"\n", string(alias))
-	_ = os.Remove(testDir + name)
+	_ = os.Remove(conf.Dir + name)
 
 	// Test with command flag
 	name = "testCommand"
 	entity = flags{Command: "sh"}
 	create(nil, []string{name, "busybox"})
-	filename, _ = filepath.Abs(testDir + name)
+	filename, _ = filepath.Abs(conf.Dir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:latest sh \"$@\"\n", string(alias))
-	_ = os.Remove(testDir + name)
+	_ = os.Remove(conf.Dir + name)
 
 	// Test with tag flag
 	name = "testTag"
 	entity = flags{Tag: "1.0.0"}
 	create(nil, []string{name, "busybox"})
-	filename, _ = filepath.Abs(testDir + name)
+	filename, _ = filepath.Abs(conf.Dir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:1.0.0  \"$@\"\n", string(alias))
-	_ = os.Remove(testDir + name)
+	_ = os.Remove(conf.Dir + name)
 
 	// Test with parameter flag
 	name = "testParameter"
 	entity = flags{Parameter: "-i"}
 	create(nil, []string{name, "busybox"})
-	filename, _ = filepath.Abs(testDir + name)
+	filename, _ = filepath.Abs(conf.Dir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, "#!/bin/sh\npodman run -i --name "+name+" busybox:latest  \"$@\"\n", string(alias))
-	_ = os.Remove(testDir + name)
+	_ = os.Remove(conf.Dir + name)
 
 	// Test default
 	name = "busybox"
 	entity = flags{}
 	create(nil, []string{name, "busybox:latest"})
-	filename, _ = filepath.Abs(testDir + name)
+	filename, _ = filepath.Abs(conf.Dir + name)
 	alias, err = ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:latest  \"$@\"\n", string(alias))
-	_ = os.Remove(testDir + name)
+	_ = os.Remove(conf.Dir + name)
 }
