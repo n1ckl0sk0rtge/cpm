@@ -69,14 +69,14 @@ func updateCommand(c string) {
 	output := fmt.Sprintf("Check for updates for %s...", c)
 	fmt.Println(output)
 
-	image := config.Instance.Get(config.ContainerImage(c)).(string)
-	tag := config.Instance.Get(config.ContainerTag(c)).(string)
+	image := config.Instance.GetString(config.ContainerImage(c))
+	tag := config.Instance.GetString(config.ContainerTag(c))
 	imageRef := image + ":" + tag
 
 	helper.Dprintln(imageRef)
 
 	getCurrentDigestCommand :=
-		fmt.Sprintf("%s inspect %s", config.Instance.Get(config.Runtime), imageRef)
+		fmt.Sprintf("%s inspect %s", config.Instance.GetString(config.Runtime), imageRef)
 	currentDigestCommand := exec.Command("sh", "-c", getCurrentDigestCommand)
 	currentDigest, err := currentDigestCommand.Output()
 
@@ -137,7 +137,7 @@ func updateCommand(c string) {
 		output = fmt.Sprintf("download new version %s@%s", image, remoteDigest)
 
 		pullNewVersionCommand :=
-			fmt.Sprintf("%s pull %s@%s", config.Instance.Get(config.Runtime), image, remoteDigest)
+			fmt.Sprintf("%s pull %s", config.Instance.Get(config.Runtime), imageRef)
 		helper.Dprintln(pullNewVersionCommand)
 		pullCommand := exec.Command("sh", "-c", pullNewVersionCommand)
 		pull, err := pullCommand.Output()
