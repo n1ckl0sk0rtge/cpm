@@ -66,7 +66,7 @@ type manifest struct {
 
 func updateCommand(c string) {
 
-	if !command.Exists(c) {
+	if !command.Exists(c, config.GetConfigProperties()) {
 		err := fmt.Errorf("command does not exists")
 		fmt.Println(err)
 		return
@@ -75,16 +75,21 @@ func updateCommand(c string) {
 	output := fmt.Sprintf("Check for updates for %s...", c)
 	fmt.Println(output)
 
-	image := config.Instance.GetString(config.CommandImage(c))
-	tag := config.Instance.GetString(config.CommandTag(c))
-	imageRef := image + ":" + tag
+	maybeCommandConfig := command.ReadConfig(c, config.GetConfigProperties())
+	if maybeCommandConfig == nil {
+		err := fmt.Errorf("could not read/found command command config")
+		fmt.Println(err)
+		return
+	}
+	commandConfig := *maybeCommandConfig
+
+	imageRef := commandConfig[command.Image] + ":" + commandConfig[command.Tag]
 
 	helper.Dprintln(imageRef)
 
 	getCurrentDigestCommand :=
 		fmt.Sprintf("%s inspect %s", config.Instance.GetString(config.Runtime), imageRef)
-	currentDigestCommand := exec.Command("sh", "-c", getCurrentDigestCommand)
-	currentDigest, err := currentDigestCommand.Output()
+	currentDigest, err := exec.Command("sh", "-c", getCurrentDigestCommand).Output()
 
 	if err != nil {
 		fmt.Println(err)
@@ -107,8 +112,7 @@ func updateCommand(c string) {
 
 	getRemoteDigestsCommand :=
 		fmt.Sprintf("%s manifest inspect %s", config.Instance.Get(config.Runtime), imageRef)
-	remoteDigestsCommand := exec.Command("sh", "-c", getRemoteDigestsCommand)
-	remoteDigests, err := remoteDigestsCommand.Output()
+	remoteDigests, err := exec.Command("sh", "-c", getRemoteDigestsCommand).Output()
 
 	if err != nil {
 		fmt.Println(err)
@@ -124,7 +128,7 @@ func updateCommand(c string) {
 		return
 	}
 
-	// Todo check for different os/arch
+	// TODO check for different os/arch
 	remoteDigest := manifest.Manifests[0].Digest
 	helper.Dprintln(remoteDigest)
 
@@ -140,7 +144,7 @@ func updateCommand(c string) {
 		output = fmt.Sprintf("update availabe for %s!", c)
 		fmt.Println(output)
 
-		output = fmt.Sprintf("download new version %s@%s", image, remoteDigest)
+		output = fmt.Sprintf("download new version %s@%s", commandConfig[command.Image], remoteDigest)
 		fmt.Println(output)
 
 		pullNewVersionCommand :=

@@ -9,15 +9,16 @@ import (
 
 const Runtime = "RUNTIME"
 
-func GetEnvPath(globalConfig *config.ConfigValues) string {
-	return globalConfig.Dir + Runtime
+func GetEnvPath(globalConfig *config.Values) string {
+	const fileName = ".runtime"
+	return globalConfig.Dir + fileName
 }
 
 func InitEnvFile() {
 	initEnvFile(config.GetConfigProperties())
 }
 
-func initEnvFile(globalConfig *config.ConfigValues) {
+func initEnvFile(globalConfig *config.Values) {
 	file := GetEnvPath(globalConfig)
 
 	if _, err := os.Stat(file); err != nil {
@@ -30,8 +31,8 @@ func initEnvFile(globalConfig *config.ConfigValues) {
 	WriteEnvFile(globalConfig, config.Instance.GetString(config.Runtime))
 }
 
-func WriteEnvFile(globalConfig *config.ConfigValues, runtime string) {
-	env, err := godotenv.Unmarshal(fmt.Sprintf("Runtime=%s", runtime))
+func WriteEnvFile(globalConfig *config.Values, runtime string) {
+	env, err := godotenv.Unmarshal(fmt.Sprintf("%s=%s", Runtime, runtime))
 
 	if err != nil {
 		fmt.Println(err)

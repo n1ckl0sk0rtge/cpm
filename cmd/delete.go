@@ -22,18 +22,18 @@ func init() {
 
 func deletion(_ *cobra.Command, args []string) {
 	name := args[0]
+
 	// remove alias file
-	err := os.Remove(config.Instance.GetString(config.CommandPath(name)))
+	err := os.Remove(config.Instance.GetString(config.ExecPath) + name)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// remove entry in config file
-	commands := config.Instance.Get(config.Container).(map[string]interface{})
-	delete(commands, name)
-	if len(commands) == 0 {
-		config.Instance.Set(config.Container, nil)
+	// remove env file
+	err = os.Remove(config.GetConfigProperties().Dir + name)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	_ = config.Instance.WriteConfig()
 }

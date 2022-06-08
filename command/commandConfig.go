@@ -6,6 +6,7 @@ import (
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -14,13 +15,15 @@ const (
 	Image     string = "IMAGE"
 	Tag       string = "TAG"
 	Parameter string = "PARAMETER"
-	Command   string = "COMMAND"
+	Commands  string = "COMMAND"
 )
 
-func CreateConfig(id string, globalConfig *config.ConfigValues) error {
+func CreateConfig(id string, globalConfig *config.Values) error {
 	file := GetConfigPath(id, globalConfig)
 
-	if _, err := os.Stat(file); err != nil {
+	if _, err := os.Stat(file); err == nil {
+		// file exists
+		err = fmt.Errorf("command already exists")
 		return err
 	}
 
@@ -31,7 +34,7 @@ func CreateConfig(id string, globalConfig *config.ConfigValues) error {
 	return nil
 }
 
-func ReadConfig(id string, globalConfig *config.ConfigValues) *map[string]string {
+func ReadConfig(id string, globalConfig *config.Values) *map[string]string {
 	file := GetConfigPath(id, globalConfig)
 
 	err := godotenv.Load(file)
@@ -42,7 +45,7 @@ func ReadConfig(id string, globalConfig *config.ConfigValues) *map[string]string
 	}
 
 	var commandsEnv map[string]string
-	commandsEnv, err = godotenv.Read()
+	commandsEnv, err = godotenv.Read(file)
 
 	if err != nil {
 		fmt.Println(err)
@@ -52,12 +55,12 @@ func ReadConfig(id string, globalConfig *config.ConfigValues) *map[string]string
 	return &commandsEnv
 }
 
-func WriteConfig(commandConfig map[string]string, id string, globalConfig *config.ConfigValues) error {
+func WriteConfig(commandConfig map[string]string, id string, globalConfig *config.Values) error {
 	file := GetConfigPath(id, globalConfig)
 	return godotenv.Write(commandConfig, file)
 }
 
-func GetConfigPath(id string, config *config.ConfigValues) string {
+func GetConfigPath(id string, config *config.Values) string {
 	return config.Dir + id
 }
 
@@ -76,7 +79,7 @@ func GenerateRandomCommandIdString() string {
 	return string(b)
 }
 
-func Exists(id string, globalConfig *config.ConfigValues) bool {
+func Exists(id string, globalConfig *config.Values) bool {
 	file := GetConfigPath(id, globalConfig)
 
 	if _, err := os.Stat(file); err != nil {
@@ -84,4 +87,21 @@ func Exists(id string, globalConfig *config.ConfigValues) bool {
 	}
 
 	return true
+}
+
+func List() ([]string, error) {
+	var files []string
+	err := filepath.Walk(config.GetConfigProperties().Dir, visit(&files))
+	return files, err
+}
+
+func visit(files *[]string) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		firstChar := fmt.Sprintf("%c", []rune(path)[1])
+
+		if firstChar == "." {
+			*files = append(*files, path)
+		}
+		return nil
+	}
 }

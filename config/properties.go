@@ -8,36 +8,36 @@ import (
 	"runtime"
 )
 
-type ConfigValues struct {
+type Values struct {
 	Dir  string
 	Name string
 	Type string
 }
 
-func GetConfigFilePath(config *ConfigValues) string {
+func GetConfigFilePath(config *Values) string {
 	return config.Dir + config.Name + "." + config.Type
 }
 
-func GetConfigProperties() *ConfigValues {
+func GetConfigProperties() *Values {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Could not get home directory %w", err)
 		os.Exit(1)
 	}
 
-	return &ConfigValues{
+	return &Values{
 		Dir:  home + "/.cpm/",
-		Name: "cpm-conf",
+		Name: ".cpm-conf",
 		Type: "yaml",
 	}
 }
 
-func GetTestConfigProperties(testName string) *ConfigValues {
+func GetTestConfigProperties(testName string) *Values {
 	_, b, _, _ := runtime.Caller(0)
 	d := path.Join(path.Dir(b))
 	projectDir := filepath.Dir(d)
 
-	return &ConfigValues{
+	return &Values{
 		Dir:  projectDir + "/tests/",
 		Name: testName,
 		Type: "yaml",

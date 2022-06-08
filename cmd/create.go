@@ -94,7 +94,6 @@ func create(_ *cobra.Command, args []string) {
 	}
 
 	// create executable
-
 	filePath := fmt.Sprintf("%s%s", config.Instance.GetString(config.ExecPath), name)
 	executable, err := os.Create(filePath)
 
@@ -110,31 +109,21 @@ func create(_ *cobra.Command, args []string) {
 		}
 	}(executable)
 
-	// generate a new identifier
-	id := command.GenerateRandomCommandIdString()
-
-	err = command.CreateConfig(id, config.GetConfigProperties())
+	err = command.CreateConfig(name, config.GetConfigProperties())
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	maybeCommandConfig := command.ReadConfig(id, config.GetConfigProperties())
-	if maybeCommandConfig == nil {
-		err = fmt.Errorf("could not read/found command command config")
-		fmt.Println(err)
-		return
-	}
-
-	commandConfig := *maybeCommandConfig
+	commandConfig := make(map[string]string)
 	commandConfig[command.Name] = containerName
 	commandConfig[command.Image] = image
 	commandConfig[command.Tag] = version
 	commandConfig[command.Parameter] = entity.Parameter
-	commandConfig[command.Command] = entity.Command
+	commandConfig[command.Commands] = entity.Command
 
-	err = command.WriteConfig(commandConfig, id, config.GetConfigProperties())
+	err = command.WriteConfig(commandConfig, name, config.GetConfigProperties())
 
 	if err != nil {
 		fmt.Println(err)
@@ -144,14 +133,16 @@ func create(_ *cobra.Command, args []string) {
 	// create alias
 
 	readRuntime := fmt.Sprintf("export $(cat %s | xargs)", cruntime.GetEnvPath(config.GetConfigProperties()))
-	readCommand := fmt.Sprintf("export $(cat %s | xargs)", command.GetConfigPath(id, config.GetConfigProperties()))
-	runCommand := fmt.Sprintf("$(echo ${%s}) run $(echo ${%s}) --name $(echo ${%s}) $(echo ${%s}):$(echo ${%s}) $(echo ${%s}) \"$@\"",
+	readCommand := fmt.Sprintf("export $(cat %s | xargs)", command.GetConfigPath(name, config.GetConfigProperties()))
+	runCommand := fmt.Sprintf("$(echo ${%s}) run %s --name $(echo ${%s}) $(echo ${%s}):$(echo ${%s}) $(echo ${%s}) \"$@\"",
 		cruntime.Runtime,
-		command.Parameter,
+		// TODO Handle Parameter
+		// parameter can not be exported as env var cause of '-'
+		commandConfig[command.Parameter],
 		command.Name,
 		command.Image,
 		command.Tag,
-		command.Command,
+		command.Commands,
 	)
 
 	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s\n%s", readRuntime, readCommand, runCommand)

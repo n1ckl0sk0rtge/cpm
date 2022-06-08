@@ -14,7 +14,7 @@ func InitGlobalConfig() {
 	initGlobalConfig(config, GetConfigStructure())
 }
 
-func initGlobalConfig(values *ConfigValues, configStructure *map[string]string) {
+func initGlobalConfig(values *Values, configStructure *map[string]string) {
 	// init config
 	Instance = viper.NewWithOptions(viper.KeyDelimiter(KeyDelimiter))
 	Instance.SetConfigName(values.Name)
@@ -51,7 +51,7 @@ func createConfFolder(location string) {
 	}
 }
 
-func InitTestGlobalConfig(name string) *ConfigValues {
+func InitTestGlobalConfig(name string) *Values {
 	config := GetTestConfigProperties(name)
 	structure := GetTestConfigStructure("podman", config.Dir)
 

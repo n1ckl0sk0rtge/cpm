@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/buger/jsonparser"
+	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/spf13/cobra"
@@ -32,22 +33,27 @@ func init() {
 }
 
 func info(_ *cobra.Command, args []string) {
-	command := args[0]
+	name := args[0]
 
-	if !getCommandConfig(command) {
-		err := fmt.Errorf("could not find command %s", command)
+	if command.Exists(name, config.GetConfigProperties()) {
+		err := fmt.Errorf("could not find command %s", name)
 		fmt.Println(err)
 		return
 	}
 
-	image := config.Instance.GetString(config.CommandImage(command))
-	tag := config.Instance.GetString(config.CommandTag(command))
-	fullImage := image + ":" + tag
+	maybeCommandConfig := command.ReadConfig(name, config.GetConfigProperties())
+	if maybeCommandConfig == nil {
+		err := fmt.Errorf("could not read/found command command config")
+		fmt.Println(err)
+		return
+	}
+	commandConfig := *maybeCommandConfig
+
+	fullImage := commandConfig[command.Image] + ":" + commandConfig[command.Tag]
 
 	// get more infos about the image
 	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", config.Instance.Get(config.Runtime), fullImage)
-	imageInfo := exec.Command("sh", "-c", getImageInfosCommand)
-	metaData, err := imageInfo.Output()
+	metaData, err := exec.Command("sh", "-c", getImageInfosCommand).Output()
 
 	if err != nil {
 		e := fmt.Errorf("could not insepect image, check if image is availabe, %s", err)
@@ -58,7 +64,7 @@ func info(_ *cobra.Command, args []string) {
 	var imageReference string
 	imageReference, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[0]")
 	if err != nil {
-		fullImage = image
+		fullImage = commandConfig[command.Image]
 	}
 
 	var digest string
@@ -85,26 +91,9 @@ func info(_ *cobra.Command, args []string) {
 		operatingSystem = ""
 	}
 
-	fmt.Println(command)
+	fmt.Println(name)
 	fmt.Printf("image:\t\t%s\n", imageReference)
 	fmt.Printf("digest:\t\t%s\n", digest)
 	fmt.Printf("size:\t\t%d byte\n", size)
 	fmt.Printf("OS/Arch:\t%s/%s\n", operatingSystem, arch)
-}
-
-func getCommandConfig(command string) bool {
-
-	containers := config.Instance.Get(config.Commands)
-
-	if containers == "{}" {
-		return false
-	}
-
-	for key := range containers.(map[string]interface{}) {
-		if key == command {
-			return true
-		}
-	}
-
-	return false
 }
