@@ -24,7 +24,7 @@ func TestDelete(t *testing.T) {
 	yamlFile, err := ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "container: {}\npath: /Users/nkoertge/_projects/cpm/tests/\nruntime: podman\n", string(yamlFile))
+	assert.Equal(t, "container: '{}'\npath: /Users/nkoertge/_projects/cpm/tests/\nruntime: podman\nsocket: /var/run/docker.sock\n", string(yamlFile))
 
 	_, err = os.Stat(conf.Dir + name)
 	assert.Error(t, err)

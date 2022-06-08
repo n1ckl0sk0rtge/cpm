@@ -13,7 +13,7 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
+	Use:   "delete COMMAND",
 	Args:  cobra.ExactArgs(1),
 	Short: "A brief description of your command",
 	Long:  `A longer description that spans multiple lines`,
@@ -34,6 +34,10 @@ func deletion(_ *cobra.Command, args []string) {
 	}
 
 	// remove entry in config file
-	delete(config.Instance.Get(config.Container).(map[string]interface{}), name)
+	commands := config.Instance.Get(config.Container).(map[string]interface{})
+	delete(commands, name)
+	if len(commands) == 0 {
+		config.Instance.Set(config.Container, nil)
+	}
 	_ = config.Instance.WriteConfig()
 }
