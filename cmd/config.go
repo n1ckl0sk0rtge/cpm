@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
-	"github.com/n1ckl0sk0rtge/cpm/helper"
+	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"path/filepath"
@@ -19,8 +19,8 @@ var configCmd = &cobra.Command{
 func init() {
 	// init config
 	cobra.OnInitialize(config.InitGlobalConfig)
-	// export container runtime as env var
-	cobra.OnInitialize(helper.Export)
+	// export container cruntime as env var
+	cobra.OnInitialize(cruntime.InitEnvFile)
 	rootCmd.AddCommand(configCmd)
 	// sub commands
 	configCmd.AddCommand(viewCmd)
@@ -77,7 +77,7 @@ func set(_ *cobra.Command, args []string) {
 		config.Instance.Set(key, value)
 
 		if key == config.Runtime {
-			helper.Export()
+			cruntime.WriteEnvFile(config.GetConfigProperties(), value)
 		}
 
 	} else {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
+	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
-	"github.com/n1ckl0sk0rtge/cpm/runtime"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
@@ -21,7 +21,7 @@ var updateCmd = &cobra.Command{
 	Long:  `A longer description that spans multiple`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if err := runtime.Available(); err != nil {
+		if err := cruntime.Available(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}

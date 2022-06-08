@@ -1,4 +1,4 @@
-package runtime
+package cruntime
 
 import (
 	"github.com/n1ckl0sk0rtge/cpm/config"

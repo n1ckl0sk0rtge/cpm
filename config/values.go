@@ -2,7 +2,7 @@ package config
 
 const (
 	Commands string = "commands"
-	Runtime  string = "runtime"
+	Runtime  string = "cruntime"
 	Socket   string = "socket"
 	ExecPath string = "path"
 )

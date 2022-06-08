@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	Name      string = "NAME"
 	Image     string = "IMAGE"
 	Tag       string = "TAG"
 	Parameter string = "PARAMETER"

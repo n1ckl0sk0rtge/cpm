@@ -34,7 +34,7 @@ func TestCreate(t *testing.T) {
 	})
 	assert.Equal(t, "provided image is not valid. Please check format\n", output)
 
-	// Test with runtime flag
+	// Test with cruntime flag
 	name := "testRuntime"
 	entity = flags{Runtime: "testRuntime"}
 	create(nil, []string{name, "busybox:latest"})

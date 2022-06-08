@@ -1,4 +1,4 @@
-package runtime
+package cruntime
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ func Available() error {
 	}(connection)
 
 	if err != nil {
-		return fmt.Errorf("container runtime is not availabe. Please check and provide a valid runtime")
+		return fmt.Errorf("container cruntime is not availabe. Please check and provide a valid cruntime")
 	}
 
 	return nil

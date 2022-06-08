@@ -1,4 +1,4 @@
-package runtime
+package cruntime
 
 import (
 	"fmt"
@@ -7,9 +7,14 @@ import (
 	"os"
 )
 
+const Runtime = "RUNTIME"
+
 func GetEnvPath(globalConfig *config.ConfigValues) string {
-	const name = "runtime"
-	return globalConfig.Dir + name
+	return globalConfig.Dir + Runtime
+}
+
+func InitEnvFile() {
+	initEnvFile(config.GetConfigProperties())
 }
 
 func initEnvFile(globalConfig *config.ConfigValues) {
@@ -22,7 +27,11 @@ func initEnvFile(globalConfig *config.ConfigValues) {
 		}
 	}
 
-	env, err := godotenv.Unmarshal(fmt.Sprintf("RUNTIME=%s", config.Instance.GetString(config.Runtime)))
+	WriteEnvFile(globalConfig, config.Instance.GetString(config.Runtime))
+}
+
+func WriteEnvFile(globalConfig *config.ConfigValues, runtime string) {
+	env, err := godotenv.Unmarshal(fmt.Sprintf("Runtime=%s", runtime))
 
 	if err != nil {
 		fmt.Println(err)
@@ -35,5 +44,4 @@ func initEnvFile(globalConfig *config.ConfigValues) {
 		fmt.Println(err)
 		return
 	}
-
 }

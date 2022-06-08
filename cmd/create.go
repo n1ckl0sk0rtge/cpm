@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
+	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/spf13/cobra"
 	"math/rand"
 	"os"
@@ -127,7 +128,7 @@ func create(_ *cobra.Command, args []string) {
 	}
 
 	commandConfig := *maybeCommandConfig
-
+	commandConfig[command.Name] = containerName
 	commandConfig[command.Image] = image
 	commandConfig[command.Tag] = version
 	commandConfig[command.Parameter] = entity.Parameter
@@ -142,12 +143,18 @@ func create(_ *cobra.Command, args []string) {
 
 	// create alias
 
-	readRuntimeCommand := fmt.Sprintf("export $(cat %s | xargs)", command.GetConfigPath(id, config.GetConfigProperties()))
+	readRuntime := fmt.Sprintf("export $(cat %s | xargs)", cruntime.GetEnvPath(config.GetConfigProperties()))
+	readCommand := fmt.Sprintf("export $(cat %s | xargs)", command.GetConfigPath(id, config.GetConfigProperties()))
+	runCommand := fmt.Sprintf("$(echo ${%s}) run $(echo ${%s}) --name $(echo ${%s}) $(echo ${%s}):$(echo ${%s}) $(echo ${%s}) \"$@\"",
+		cruntime.Runtime,
+		command.Parameter,
+		command.Name,
+		command.Image,
+		command.Tag,
+		command.Command,
+	)
 
-	execCommand := fmt.Sprintln(
-		"$(echo ${CPM_CONTAINER_RT})", "run", entity.Parameter, "--name", containerName, image+":"+version, entity.Command, "\"$@\"")
-
-	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s", readRuntimeCommand, execCommand)
+	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s\n%s", readRuntime, readCommand, runCommand)
 	_, err = executable.WriteString(fileContent)
 
 	if err != nil {
@@ -157,15 +164,7 @@ func create(_ *cobra.Command, args []string) {
 
 	// make the file executable
 	chmodCommand := fmt.Sprintf("chmod +x %s", filePath)
-	chmod := exec.Command("sh", "-c", chmodCommand)
-	_, err = chmod.Output()
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	err = config.Instance.WriteConfig()
+	_, err = exec.Command("sh", "-c", chmodCommand).Output()
 
 	if err != nil {
 		fmt.Println(err)
