@@ -35,7 +35,7 @@ func list(_ *cobra.Command, _ []string) {
 
 func GetCommands() [][]string {
 
-	containers := config.Instance.Get(config.Container)
+	containers := config.Instance.Get(config.Commands)
 
 	var data [][]string
 
@@ -43,11 +43,11 @@ func GetCommands() [][]string {
 		for key := range containers.(map[string]interface{}) {
 			data = append(data, []string{
 				key,
-				config.Instance.GetString(config.ContainerImage(key)),
-				config.Instance.GetString(config.ContainerTag(key)),
-				config.Instance.GetString(config.ContainerParameter(key)),
-				config.Instance.GetString(config.ContainerCommand(key)),
-				config.Instance.GetString(config.ContainerPath(key)),
+				config.Instance.GetString(config.CommandImage(key)),
+				config.Instance.GetString(config.CommandTag(key)),
+				config.Instance.GetString(config.CommandParameter(key)),
+				config.Instance.GetString(config.CommandCommand(key)),
+				config.Instance.GetString(config.CommandPath(key)),
 			})
 		}
 	}

@@ -3,8 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
+	"github.com/n1ckl0sk0rtge/cpm/runtime"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
@@ -19,7 +21,7 @@ var updateCmd = &cobra.Command{
 	Long:  `A longer description that spans multiple`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if err := helper.Available(); err != nil {
+		if err := runtime.Available(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -64,7 +66,7 @@ type manifest struct {
 
 func updateCommand(c string) {
 
-	if !config.CommandExists(c) {
+	if !command.Exists(c) {
 		err := fmt.Errorf("command does not exists")
 		fmt.Println(err)
 		return
@@ -73,8 +75,8 @@ func updateCommand(c string) {
 	output := fmt.Sprintf("Check for updates for %s...", c)
 	fmt.Println(output)
 
-	image := config.Instance.GetString(config.ContainerImage(c))
-	tag := config.Instance.GetString(config.ContainerTag(c))
+	image := config.Instance.GetString(config.CommandImage(c))
+	tag := config.Instance.GetString(config.CommandTag(c))
 	imageRef := image + ":" + tag
 
 	helper.Dprintln(imageRef)

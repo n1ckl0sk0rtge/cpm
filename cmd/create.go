@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/spf13/cobra"
 	"math/rand"
@@ -50,9 +51,6 @@ func init() {
 
 	createCmd.Flags().StringVarP(&entity.Command, "command", "c", "",
 		"set the command that should be executed in the container")
-
-	createCmd.Flags().StringVarP(&entity.Runtime, "runtime", "r", "",
-		"provide container runtime, otherwise the value from the config will be used")
 }
 
 func create(_ *cobra.Command, args []string) {
@@ -94,12 +92,8 @@ func create(_ *cobra.Command, args []string) {
 		containerName = image + random
 	}
 
-	containerRuntime := config.Instance.Get(config.Runtime)
-	if len(entity.Runtime) > 0 {
-		containerRuntime = entity.Runtime
-	}
-
 	// create executable
+
 	filePath := fmt.Sprintf("%s%s", config.Instance.GetString(config.ExecPath), name)
 	executable, err := os.Create(filePath)
 
@@ -112,14 +106,48 @@ func create(_ *cobra.Command, args []string) {
 		err := executable.Close()
 		if err != nil {
 			fmt.Println(err)
-			return
 		}
 	}(executable)
 
-	execCommand := fmt.Sprintln(
-		containerRuntime, "run", entity.Parameter, "--name", containerName, image+":"+version, entity.Command, "\"$@\"")
+	// generate a new identifier
+	id := command.GenerateRandomCommandIdString()
 
-	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
+	err = command.CreateConfig(id, config.GetConfigProperties())
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	maybeCommandConfig := command.ReadConfig(id, config.GetConfigProperties())
+	if maybeCommandConfig == nil {
+		err = fmt.Errorf("could not read/found command command config")
+		fmt.Println(err)
+		return
+	}
+
+	commandConfig := *maybeCommandConfig
+
+	commandConfig[command.Image] = image
+	commandConfig[command.Tag] = version
+	commandConfig[command.Parameter] = entity.Parameter
+	commandConfig[command.Command] = entity.Command
+
+	err = command.WriteConfig(commandConfig, id, config.GetConfigProperties())
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// create alias
+
+	readRuntimeCommand := fmt.Sprintf("export $(cat %s | xargs)", command.GetConfigPath(id, config.GetConfigProperties()))
+
+	execCommand := fmt.Sprintln(
+		"$(echo ${CPM_CONTAINER_RT})", "run", entity.Parameter, "--name", containerName, image+":"+version, entity.Command, "\"$@\"")
+
+	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s", readRuntimeCommand, execCommand)
 	_, err = executable.WriteString(fileContent)
 
 	if err != nil {
@@ -136,13 +164,6 @@ func create(_ *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
-
-	// add a link to the command in the configuration
-	config.Instance.Set(config.ContainerImage(name), image)
-	config.Instance.Set(config.ContainerTag(name), version)
-	config.Instance.Set(config.ContainerParameter(name), entity.Parameter)
-	config.Instance.Set(config.ContainerCommand(name), entity.Command)
-	config.Instance.Set(config.ContainerPath(name), filePath)
 
 	err = config.Instance.WriteConfig()
 

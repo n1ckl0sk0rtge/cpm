@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
+	"github.com/n1ckl0sk0rtge/cpm/runtime"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
@@ -12,8 +13,8 @@ import (
 
 func TestInfoCommandNotExists(t *testing.T) {
 	test := "testInfoCommandNotExists"
-	_ = config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	_ = config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	command := "busybox"
 	output := helper.CatchStdOut(t, func() {
@@ -24,8 +25,8 @@ func TestInfoCommandNotExists(t *testing.T) {
 
 func TestInfo(t *testing.T) {
 	test := "testInfo"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	name := "busybox"
 	image := name + "@sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87"
@@ -55,7 +56,7 @@ func TestInfo(t *testing.T) {
 		info(nil, []string{command})
 	})
 
-	if err := helper.Available(); err != nil {
+	if err := runtime.Available(); err != nil {
 		assert.Equal(t, "could not insepect image, check if image is availabe, exit status 125\n", output)
 	} else {
 		assert.Equal(t, "busybox\nimage:\t\tdocker.io/library/busybox:latest\ndigest:\t\tdocker.io/library/busybox@sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87\nsize:\t\t1464006 byte\nOS/Arch:\tlinux/amd64\n", output)

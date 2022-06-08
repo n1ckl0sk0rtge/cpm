@@ -27,7 +27,7 @@ func init() {
 func deletion(_ *cobra.Command, args []string) {
 	name := args[0]
 	// remove alias file
-	err := os.Remove(config.Instance.GetString(config.ContainerPath(name)))
+	err := os.Remove(config.Instance.GetString(config.CommandPath(name)))
 	if err != nil {
 		fmt.Println(err)
 		return

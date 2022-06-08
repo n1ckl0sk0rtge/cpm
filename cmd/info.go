@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/buger/jsonparser"
 	"github.com/n1ckl0sk0rtge/cpm/config"
-	"github.com/n1ckl0sk0rtge/cpm/helper"
+	"github.com/n1ckl0sk0rtge/cpm/runtime"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
@@ -18,7 +18,7 @@ var infoCmd = &cobra.Command{
 	Long:  `A longer description that spans multiple`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if err := helper.Available(); err != nil {
+		if err := runtime.Available(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -40,8 +40,8 @@ func info(_ *cobra.Command, args []string) {
 		return
 	}
 
-	image := config.Instance.GetString(config.ContainerImage(command))
-	tag := config.Instance.GetString(config.ContainerTag(command))
+	image := config.Instance.GetString(config.CommandImage(command))
+	tag := config.Instance.GetString(config.CommandTag(command))
 	fullImage := image + ":" + tag
 
 	// get more infos about the image
@@ -94,7 +94,7 @@ func info(_ *cobra.Command, args []string) {
 
 func getCommandConfig(command string) bool {
 
-	containers := config.Instance.Get(config.Container)
+	containers := config.Instance.Get(config.Commands)
 
 	if containers == "{}" {
 		return false

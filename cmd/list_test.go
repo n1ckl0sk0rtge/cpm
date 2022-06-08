@@ -11,8 +11,8 @@ import (
 
 func TestListEmpty(t *testing.T) {
 	test := "testListEmpty"
-	_ = config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	_ = config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	// empty command
 	output := helper.CatchStdOut(t, func() {
@@ -23,8 +23,8 @@ func TestListEmpty(t *testing.T) {
 
 func TestList(t *testing.T) {
 	test := "testList"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	name := "busybox"
 	// create command

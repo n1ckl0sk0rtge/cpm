@@ -7,13 +7,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 )
 
 func TestCreate(t *testing.T) {
 	test := "testCreate"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	// Test name contains unwanted char's
 	output := helper.CatchStdOut(t, func() {
@@ -82,4 +83,10 @@ func TestCreate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:latest  \"$@\"\n", string(alias))
 	_ = os.Remove(conf.Dir + name)
+}
+
+func TestCreateRandomEnvVarString(t *testing.T) {
+	if matched, _ := regexp.MatchString(`^[A-Z\d]*$`, createRandomEnvVarString()); matched != true {
+		t.Fail()
+	}
 }

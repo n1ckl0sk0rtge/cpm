@@ -1,4 +1,4 @@
-package helper
+package runtime
 
 import (
 	"github.com/n1ckl0sk0rtge/cpm/config"
@@ -9,8 +9,8 @@ import (
 
 func TestAvailable(t *testing.T) {
 	test := "testAvailable"
-	_ = config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	_ = config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	runtimeString := config.Instance.GetString(config.Runtime)
 

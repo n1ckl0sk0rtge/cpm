@@ -11,8 +11,8 @@ import (
 
 func TestDelete(t *testing.T) {
 	test := "testDelete"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	name := "busybox"
 	entity = flags{}
@@ -20,7 +20,7 @@ func TestDelete(t *testing.T) {
 
 	deletion(nil, []string{"busybox"})
 
-	filename, _ := filepath.Abs(config.GetFilePath(conf))
+	filename, _ := filepath.Abs(config.GetConfigFilePath(conf))
 	yamlFile, err := ioutil.ReadFile(filename)
 	assert.NoError(t, err)
 

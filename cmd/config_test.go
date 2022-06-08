@@ -10,10 +10,10 @@ import (
 
 func TestView(t *testing.T) {
 	test := "testView"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
-	file := config.GetFilePath(conf)
+	file := config.GetConfigFilePath(conf)
 	output := helper.CatchStdOut(t, func() {
 		view(file)
 	})
@@ -22,10 +22,10 @@ func TestView(t *testing.T) {
 
 func TestSet(t *testing.T) {
 	test := "testSet"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
-	file := config.GetFilePath(conf)
+	file := config.GetConfigFilePath(conf)
 
 	key := config.Runtime
 	value := fmt.Sprintf("testRuntime")

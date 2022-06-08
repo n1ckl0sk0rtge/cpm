@@ -12,8 +12,8 @@ import (
 
 func TestUpdateCommandDoesNotExists(t *testing.T) {
 	test := "testUpdateCommandDoesNotExists"
-	_ = config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	_ = config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	output := helper.CatchStdOut(t, func() {
 		updateCommand("busybox")
@@ -23,8 +23,8 @@ func TestUpdateCommandDoesNotExists(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	test := "testUpdate"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	conf := config.InitTestGlobalConfig(test)
+	defer config.RemoveTestGlobalConfig(test)
 
 	image := "docker.io/library/busybox"
 	digest := "sha256:5f0395a8920379b7a83cebdc98341f717699ce6b2ab8139fb677c0af4d9a92cb"
