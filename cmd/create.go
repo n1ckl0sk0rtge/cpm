@@ -132,20 +132,19 @@ func create(_ *cobra.Command, args []string) {
 
 	// create alias
 
-	readRuntime := fmt.Sprintf("export $(cat %s | xargs)", cruntime.GetEnvPath(config.GetConfigProperties()))
-	readCommand := fmt.Sprintf("export $(cat %s | xargs)", command.GetConfigPath(name, config.GetConfigProperties()))
-	runCommand := fmt.Sprintf("$(echo ${%s}) run %s --name $(echo ${%s}) $(echo ${%s}):$(echo ${%s}) $(echo ${%s}) \"$@\"",
+	exportEnv := fmt.Sprintf("set -o allexport; source %s; source %s; set +o allexport",
+		cruntime.GetEnvPath(config.GetConfigProperties()),
+		command.GetConfigPath(name, config.GetConfigProperties()))
+	runCommand := fmt.Sprintf("$(echo ${%s}) run $(echo ${%s}) --name $(echo ${%s}) $(echo ${%s}):$(echo ${%s}) $(echo ${%s}) \"$@\"",
 		cruntime.Runtime,
-		// TODO Handle Parameter
-		// parameter can not be exported as env var cause of '-'
-		commandConfig[command.Parameter],
+		command.Parameter,
 		command.Name,
 		command.Image,
 		command.Tag,
 		command.Commands,
 	)
 
-	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s\n%s", readRuntime, readCommand, runCommand)
+	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s", exportEnv, runCommand)
 	_, err = executable.WriteString(fileContent)
 
 	if err != nil {
