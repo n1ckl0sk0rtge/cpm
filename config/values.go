@@ -1,7 +1,6 @@
 package config
 
 const (
-	Commands string = "commands"
 	Runtime  string = "runtime"
 	Socket   string = "socket"
 	ExecPath string = "path"
@@ -14,7 +13,6 @@ func GetConfigStructure() *map[string]string {
 	config[Runtime] = "docker"
 	config[ExecPath] = "/usr/local/bin/"
 	config[Socket] = "/var/run/docker.sock"
-	config[Commands] = "{}"
 	return &config
 }
 
@@ -23,6 +21,5 @@ func GetTestConfigStructure(runtime string, testExecPath string) *map[string]str
 	config[Runtime] = runtime
 	config[ExecPath] = testExecPath
 	config[Socket] = "/var/run/docker.sock"
-	config[Commands] = "{}"
 	return &config
 }

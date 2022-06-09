@@ -6,6 +6,11 @@ import (
 	"net"
 )
 
+const (
+	Docker string = "docker"
+	Podman string = "podman"
+)
+
 func Available() error {
 	socket := config.Instance.GetString(config.Socket)
 	connection, err := net.Dial("unix", socket)

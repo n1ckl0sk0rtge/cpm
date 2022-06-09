@@ -82,11 +82,12 @@ func GenerateRandomCommandIdString() string {
 func Exists(id string, globalConfig *config.Values) bool {
 	file := GetConfigPath(id, globalConfig)
 
-	if _, err := os.Stat(file); err != nil {
-		return false
+	if _, err := os.Stat(file); err == nil {
+		// file exists
+		return true
 	}
 
-	return true
+	return false
 }
 
 func List() ([]string, error) {
@@ -97,10 +98,10 @@ func List() ([]string, error) {
 
 func visit(files *[]string) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
-		firstChar := fmt.Sprintf("%c", []rune(path)[1])
-
-		if firstChar == "." {
-			*files = append(*files, path)
+		name := info.Name()
+		firstChar := string([]rune(name)[0])
+		if firstChar != "." {
+			*files = append(*files, name)
 		}
 		return nil
 	}

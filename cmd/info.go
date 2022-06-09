@@ -6,6 +6,7 @@ import (
 	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/cruntime"
+	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
@@ -35,7 +36,9 @@ func init() {
 func info(_ *cobra.Command, args []string) {
 	name := args[0]
 
-	if command.Exists(name, config.GetConfigProperties()) {
+	crun := config.Instance.GetString(config.Runtime)
+
+	if !command.Exists(name, config.GetConfigProperties()) {
 		err := fmt.Errorf("could not find command %s", name)
 		fmt.Println(err)
 		return
@@ -50,9 +53,10 @@ func info(_ *cobra.Command, args []string) {
 	commandConfig := *maybeCommandConfig
 
 	fullImage := commandConfig[command.Image] + ":" + commandConfig[command.Tag]
+	helper.Dprintln(fullImage)
 
 	// get more infos about the image
-	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", config.Instance.Get(config.Runtime), fullImage)
+	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", crun, fullImage)
 	metaData, err := exec.Command("sh", "-c", getImageInfosCommand).Output()
 
 	if err != nil {
@@ -62,17 +66,25 @@ func info(_ *cobra.Command, args []string) {
 	}
 
 	var imageReference string
-	imageReference, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[0]")
+	imageReference, err = jsonparser.GetString(metaData, "[0]", "RepoTags", "[0]")
 	if err != nil {
 		fullImage = commandConfig[command.Image]
 	}
 
+	// digest
 	var digest string
-	digest, err = jsonparser.GetString(metaData, "[0]", "NamesHistory", "[1]")
+
+	if crun == cruntime.Podman {
+		digest, err = jsonparser.GetString(metaData, "[0]", "Digest")
+	} else {
+		digest, err = jsonparser.GetString(metaData, "[0]", "Id")
+	}
+
 	if err != nil {
 		digest = ""
 	}
 
+	// size
 	var size int64
 	size, err = jsonparser.GetInt(metaData, "[0]", "Size")
 	if err != nil {

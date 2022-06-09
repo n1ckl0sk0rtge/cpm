@@ -141,10 +141,10 @@ func updateCommand(c string) {
 	helper.Dprintln(localDigest)
 
 	if len(localDigest) == 0 {
-		output = fmt.Sprintf("update availabe for %s!", c)
+		output = fmt.Sprintf("Update availabe for %s!", c)
 		fmt.Println(output)
 
-		output = fmt.Sprintf("download new version %s@%s", commandConfig[command.Image], remoteDigest)
+		output = fmt.Sprintf("=> Download new version %s@%s", commandConfig[command.Image], remoteDigest)
 		fmt.Println(output)
 
 		pullNewVersionCommand :=
