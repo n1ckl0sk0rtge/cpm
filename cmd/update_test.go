@@ -11,9 +11,8 @@ import (
 )
 
 func TestUpdateCommandDoesNotExists(t *testing.T) {
-	test := "testUpdateCommandDoesNotExists"
-	_ = config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	config.InitGlobalConfig()
+	defer config.RemoveGlobalConfig()
 
 	output := helper.CatchStdOut(t, func() {
 		updateCommand("busybox")
@@ -22,9 +21,11 @@ func TestUpdateCommandDoesNotExists(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	test := "testUpdate"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	config.InitGlobalConfig()
+	defer config.RemoveGlobalConfig()
+
+	confStructure := *config.GetConfigStructure()
+	execPath := confStructure[config.ExecPath]
 
 	image := "docker.io/library/busybox"
 	digest := "sha256:5f0395a8920379b7a83cebdc98341f717699ce6b2ab8139fb677c0af4d9a92cb"
@@ -66,13 +67,14 @@ func TestUpdate(t *testing.T) {
 	entity = flags{}
 	create(nil, []string{name, "busybox:latest"})
 	// remove command at the end
-	defer func(name string) {
-		err := os.Remove(name)
+	defer func() {
+		err := os.Remove(config.GetConfigProperties().Dir + name)
+		err = os.Remove(execPath + name)
 		if err != nil {
 			fmt.Println(err)
 			t.Fail()
 		}
-	}(conf.Dir + name)
+	}()
 
 	output := helper.CatchStdOut(t, func() {
 		updateCommand(name)

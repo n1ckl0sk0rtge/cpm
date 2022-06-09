@@ -3,7 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
+	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/spf13/cobra"
 	"os"
@@ -19,7 +21,7 @@ var updateCmd = &cobra.Command{
 	Long:  `A longer description that spans multiple`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if err := helper.Available(); err != nil {
+		if err := cruntime.Available(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -64,7 +66,7 @@ type manifest struct {
 
 func updateCommand(c string) {
 
-	if !config.CommandExists(c) {
+	if !command.Exists(c, config.GetConfigProperties()) {
 		err := fmt.Errorf("command does not exists")
 		fmt.Println(err)
 		return
@@ -73,16 +75,27 @@ func updateCommand(c string) {
 	output := fmt.Sprintf("Check for updates for %s...", c)
 	fmt.Println(output)
 
-	image := config.Instance.GetString(config.ContainerImage(c))
-	tag := config.Instance.GetString(config.ContainerTag(c))
-	imageRef := image + ":" + tag
+	maybeCommandConfig := command.ReadConfig(c, config.GetConfigProperties())
+	if maybeCommandConfig == nil {
+		err := fmt.Errorf("could not read/found command command config")
+		fmt.Println(err)
+		return
+	}
+	commandConfig := *maybeCommandConfig
+
+	var imageRef string
+	if strings.Contains(commandConfig[command.Tag], "sha") {
+		fmt.Println("No updates for images referenced by digest. Skip")
+		return
+	} else {
+		imageRef = commandConfig[command.Image] + ":" + commandConfig[command.Tag]
+	}
 
 	helper.Dprintln(imageRef)
 
 	getCurrentDigestCommand :=
 		fmt.Sprintf("%s inspect %s", config.Instance.GetString(config.Runtime), imageRef)
-	currentDigestCommand := exec.Command("sh", "-c", getCurrentDigestCommand)
-	currentDigest, err := currentDigestCommand.Output()
+	currentDigest, err := exec.Command("sh", "-c", getCurrentDigestCommand).Output()
 
 	if err != nil {
 		fmt.Println(err)
@@ -105,8 +118,7 @@ func updateCommand(c string) {
 
 	getRemoteDigestsCommand :=
 		fmt.Sprintf("%s manifest inspect %s", config.Instance.Get(config.Runtime), imageRef)
-	remoteDigestsCommand := exec.Command("sh", "-c", getRemoteDigestsCommand)
-	remoteDigests, err := remoteDigestsCommand.Output()
+	remoteDigests, err := exec.Command("sh", "-c", getRemoteDigestsCommand).Output()
 
 	if err != nil {
 		fmt.Println(err)
@@ -122,7 +134,7 @@ func updateCommand(c string) {
 		return
 	}
 
-	// Todo check for different os/arch
+	// TODO check for different os/arch
 	remoteDigest := manifest.Manifests[0].Digest
 	helper.Dprintln(remoteDigest)
 
@@ -135,10 +147,10 @@ func updateCommand(c string) {
 	helper.Dprintln(localDigest)
 
 	if len(localDigest) == 0 {
-		output = fmt.Sprintf("update availabe for %s!", c)
+		output = fmt.Sprintf("Update availabe for %s!", c)
 		fmt.Println(output)
 
-		output = fmt.Sprintf("download new version %s@%s", image, remoteDigest)
+		output = fmt.Sprintf("=> Download new version %s@%s", commandConfig[command.Image], remoteDigest)
 		fmt.Println(output)
 
 		pullNewVersionCommand :=

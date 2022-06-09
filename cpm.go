@@ -7,6 +7,7 @@ import (
 )
 
 func init() {
+	// set dev mode
 	err := os.Setenv("CPM_DEV_MODE", "false")
 	if err != nil {
 		fmt.Println(err)

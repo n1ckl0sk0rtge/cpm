@@ -11,9 +11,14 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	test := "testCreate"
-	conf := config.InitTestConfig(test)
-	defer config.RemoveTestConfig(test)
+	config.InitGlobalConfig()
+	defer config.RemoveGlobalConfig()
+
+	confStructure := *config.GetConfigStructure()
+	execPath := confStructure[config.ExecPath]
+
+	// homeDir
+	home, err := os.UserHomeDir()
 
 	// Test name contains unwanted char's
 	output := helper.CatchStdOut(t, func() {
@@ -33,53 +38,52 @@ func TestCreate(t *testing.T) {
 	})
 	assert.Equal(t, "provided image is not valid. Please check format\n", output)
 
-	// Test with runtime flag
-	name := "testRuntime"
-	entity = flags{Runtime: "testRuntime"}
-	create(nil, []string{name, "busybox:latest"})
-	filename, _ := filepath.Abs(conf.Dir + name)
-	alias, err := ioutil.ReadFile(filename)
-	assert.NoError(t, err)
-	assert.Equal(t, "#!/bin/sh\ntestRuntime run  --name "+name+" busybox:latest  \"$@\"\n", string(alias))
-	_ = os.Remove(conf.Dir + name)
-
 	// Test with command flag
-	name = "testCommand"
+	name := "testCommand"
 	entity = flags{Command: "sh"}
 	create(nil, []string{name, "busybox"})
-	filename, _ = filepath.Abs(conf.Dir + name)
-	alias, err = ioutil.ReadFile(filename)
+	envFile, _ := filepath.Abs(config.GetConfigProperties().Dir + name)
+	env, err := ioutil.ReadFile(envFile)
 	assert.NoError(t, err)
-	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:latest sh \"$@\"\n", string(alias))
-	_ = os.Remove(conf.Dir + name)
+	assert.Equal(t, "COMMAND=\"sh\"\nIMAGE=\"busybox\"\nNAME=\""+name+"\"\nPARAMETER=\"\"\nTAG=\"latest\"\n", string(env))
+	_ = os.Remove(config.GetConfigProperties().Dir + name)
+
+	aliasFile, _ := filepath.Abs(execPath + name)
+	alias, err := ioutil.ReadFile(aliasFile)
+	assert.NoError(t, err)
+	assert.Equal(t, "#!/bin/sh\nset -o allexport; source "+home+"/.cpm/.runtime; source "+home+"/.cpm/"+name+"; set +o allexport\n$(echo ${RUNTIME}) run $(echo ${PARAMETER}) --name $(echo ${NAME}) $(echo ${IMAGE}):$(echo ${TAG}) $(echo ${COMMAND}) \"$@\"", string(alias))
+	_ = os.Remove(execPath + name)
 
 	// Test with tag flag
 	name = "testTag"
 	entity = flags{Tag: "1.0.0"}
 	create(nil, []string{name, "busybox"})
-	filename, _ = filepath.Abs(conf.Dir + name)
-	alias, err = ioutil.ReadFile(filename)
+	envFile, _ = filepath.Abs(config.GetConfigProperties().Dir + name)
+	env, err = ioutil.ReadFile(envFile)
 	assert.NoError(t, err)
-	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:1.0.0  \"$@\"\n", string(alias))
-	_ = os.Remove(conf.Dir + name)
+	assert.Equal(t, "COMMAND=\"\"\nIMAGE=\"busybox\"\nNAME=\""+name+"\"\nPARAMETER=\"\"\nTAG=\"1.0.0\"\n", string(env))
+	_ = os.Remove(config.GetConfigProperties().Dir + name)
+	_ = os.Remove(execPath + name)
 
 	// Test with parameter flag
 	name = "testParameter"
 	entity = flags{Parameter: "-i"}
 	create(nil, []string{name, "busybox"})
-	filename, _ = filepath.Abs(conf.Dir + name)
-	alias, err = ioutil.ReadFile(filename)
+	envFile, _ = filepath.Abs(config.GetConfigProperties().Dir + name)
+	env, err = ioutil.ReadFile(envFile)
 	assert.NoError(t, err)
-	assert.Equal(t, "#!/bin/sh\npodman run -i --name "+name+" busybox:latest  \"$@\"\n", string(alias))
-	_ = os.Remove(conf.Dir + name)
+	assert.Equal(t, "COMMAND=\"\"\nIMAGE=\"busybox\"\nNAME=\""+name+"\"\nPARAMETER=\"-i\"\nTAG=\"latest\"\n", string(env))
+	_ = os.Remove(config.GetConfigProperties().Dir + name)
+	_ = os.Remove(execPath + name)
 
 	// Test default
 	name = "busybox"
 	entity = flags{}
 	create(nil, []string{name, "busybox:latest"})
-	filename, _ = filepath.Abs(conf.Dir + name)
-	alias, err = ioutil.ReadFile(filename)
+	envFile, _ = filepath.Abs(config.GetConfigProperties().Dir + name)
+	env, err = ioutil.ReadFile(envFile)
 	assert.NoError(t, err)
-	assert.Equal(t, "#!/bin/sh\npodman run  --name "+name+" busybox:latest  \"$@\"\n", string(alias))
-	_ = os.Remove(conf.Dir + name)
+	assert.Equal(t, "COMMAND=\"\"\nIMAGE=\"busybox\"\nNAME=\""+name+"\"\nPARAMETER=\"\"\nTAG=\"latest\"\n", string(env))
+	_ = os.Remove(config.GetConfigProperties().Dir + name)
+	_ = os.Remove(execPath + name)
 }

@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
+	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/spf13/cobra"
 	"math/rand"
 	"os"
@@ -50,9 +52,6 @@ func init() {
 
 	createCmd.Flags().StringVarP(&entity.Command, "command", "c", "",
 		"set the command that should be executed in the container")
-
-	createCmd.Flags().StringVarP(&entity.Runtime, "runtime", "r", "",
-		"provide container runtime, otherwise the value from the config will be used")
 }
 
 func create(_ *cobra.Command, args []string) {
@@ -71,7 +70,15 @@ func create(_ *cobra.Command, args []string) {
 	}
 
 	version := "latest"
-	if strings.Contains(image, ":") {
+	if strings.Contains(image, "@") {
+		parts := strings.Split(image, "@")
+		if len(parts) != 2 {
+			err := fmt.Errorf("provided image is not valid. Please check format")
+			fmt.Println(err)
+			return
+		}
+		image, version = parts[0], parts[1]
+	} else if strings.Contains(image, ":") {
 		parts := strings.Split(image, ":")
 		if len(parts) != 2 {
 			err := fmt.Errorf("provided image is not valid. Please check format")
@@ -94,11 +101,6 @@ func create(_ *cobra.Command, args []string) {
 		containerName = image + random
 	}
 
-	containerRuntime := config.Instance.Get(config.Runtime)
-	if len(entity.Runtime) > 0 {
-		containerRuntime = entity.Runtime
-	}
-
 	// create executable
 	filePath := fmt.Sprintf("%s%s", config.Instance.GetString(config.ExecPath), name)
 	executable, err := os.Create(filePath)
@@ -112,14 +114,45 @@ func create(_ *cobra.Command, args []string) {
 		err := executable.Close()
 		if err != nil {
 			fmt.Println(err)
-			return
 		}
 	}(executable)
 
-	execCommand := fmt.Sprintln(
-		containerRuntime, "run", entity.Parameter, "--name", containerName, image+":"+version, entity.Command, "\"$@\"")
+	err = command.CreateConfig(name, config.GetConfigProperties())
 
-	fileContent := fmt.Sprintf("#!/bin/sh\n%s", execCommand)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	commandConfig := make(map[string]string)
+	commandConfig[command.Name] = containerName
+	commandConfig[command.Image] = image
+	commandConfig[command.Tag] = version
+	commandConfig[command.Parameter] = entity.Parameter
+	commandConfig[command.Commands] = entity.Command
+
+	err = command.WriteConfig(commandConfig, name, config.GetConfigProperties())
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// create alias
+
+	exportEnv := fmt.Sprintf("set -o allexport; source %s; source %s; set +o allexport",
+		cruntime.GetEnvPath(config.GetConfigProperties()),
+		command.GetConfigPath(name, config.GetConfigProperties()))
+	runCommand := fmt.Sprintf("$(echo ${%s}) run $(echo ${%s}) --name $(echo ${%s}) $(echo ${%s}):$(echo ${%s}) $(echo ${%s}) \"$@\"",
+		cruntime.Runtime,
+		command.Parameter,
+		command.Name,
+		command.Image,
+		command.Tag,
+		command.Commands,
+	)
+
+	fileContent := fmt.Sprintf("#!/bin/sh\n%s\n%s", exportEnv, runCommand)
 	_, err = executable.WriteString(fileContent)
 
 	if err != nil {
@@ -129,22 +162,7 @@ func create(_ *cobra.Command, args []string) {
 
 	// make the file executable
 	chmodCommand := fmt.Sprintf("chmod +x %s", filePath)
-	chmod := exec.Command("sh", "-c", chmodCommand)
-	_, err = chmod.Output()
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// add a link to the command in the configuration
-	config.Instance.Set(config.ContainerImage(name), image)
-	config.Instance.Set(config.ContainerTag(name), version)
-	config.Instance.Set(config.ContainerParameter(name), entity.Parameter)
-	config.Instance.Set(config.ContainerCommand(name), entity.Command)
-	config.Instance.Set(config.ContainerPath(name), filePath)
-
-	err = config.Instance.WriteConfig()
+	_, err = exec.Command("sh", "-c", chmodCommand).Output()
 
 	if err != nil {
 		fmt.Println(err)

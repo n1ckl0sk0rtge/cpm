@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/n1ckl0sk0rtge/cpm/config"
+	"github.com/n1ckl0sk0rtge/cpm/cruntime"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"path/filepath"
@@ -17,7 +18,9 @@ var configCmd = &cobra.Command{
 
 func init() {
 	// init config
-	cobra.OnInitialize(config.InitConfig)
+	cobra.OnInitialize(config.InitGlobalConfig)
+	// export container cruntime as env var
+	cobra.OnInitialize(cruntime.InitEnvFile)
 	rootCmd.AddCommand(configCmd)
 	// sub commands
 	configCmd.AddCommand(viewCmd)
@@ -31,7 +34,7 @@ var viewCmd = &cobra.Command{
 	Long:  `Display config settings`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var conf = config.GetConfigProperties()
-		configFilePath := config.GetFilePath(conf)
+		configFilePath := config.GetConfigFilePath(conf)
 		view(configFilePath)
 	},
 }
@@ -70,7 +73,13 @@ func set(_ *cobra.Command, args []string) {
 	configStructure := *config.GetConfigStructure()
 
 	if _, ok := configStructure[key]; ok {
+
 		config.Instance.Set(key, value)
+
+		if key == config.Runtime {
+			cruntime.WriteEnvFile(config.GetConfigProperties(), value)
+		}
+
 	} else {
 		err := fmt.Errorf("the provided key is not valid, Please ensure to provid an existing key")
 		fmt.Println(err)

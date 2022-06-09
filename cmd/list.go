@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -22,7 +24,7 @@ func init() {
 
 func list(_ *cobra.Command, _ []string) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"NAME", "IMAGE", "TAG", "PARAMETER", "COMMAND", "PATH"})
+	table.SetHeader([]string{"NAME", "IMAGE", "TAG", "PARAMETER", "COMMAND"})
 	table.SetBorder(false)
 	table.SetRowLine(false)
 	table.SetColumnSeparator("")
@@ -35,21 +37,32 @@ func list(_ *cobra.Command, _ []string) {
 
 func GetCommands() [][]string {
 
-	containers := config.Instance.Get(config.Container)
+	commandConfFiles, err := command.List()
+
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
 
 	var data [][]string
 
-	if !(containers == "{}") {
-		for key := range containers.(map[string]interface{}) {
-			data = append(data, []string{
-				key,
-				config.Instance.GetString(config.ContainerImage(key)),
-				config.Instance.GetString(config.ContainerTag(key)),
-				config.Instance.GetString(config.ContainerParameter(key)),
-				config.Instance.GetString(config.ContainerCommand(key)),
-				config.Instance.GetString(config.ContainerPath(key)),
-			})
+	for _, fileName := range commandConfFiles {
+
+		maybeValues := command.ReadConfig(fileName, config.GetConfigProperties())
+		if maybeValues == nil {
+			err = fmt.Errorf("could not read/found command command config")
+			fmt.Println(err)
+			return nil
 		}
+		values := *maybeValues
+
+		data = append(data, []string{
+			values[command.Name],
+			values[command.Image],
+			values[command.Tag],
+			values[command.Parameter],
+			values[command.Commands],
+		})
 	}
 
 	return data
