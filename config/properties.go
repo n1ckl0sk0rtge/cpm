@@ -3,9 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
-	"path/filepath"
-	"runtime"
 )
 
 type Values struct {
@@ -28,18 +25,6 @@ func GetConfigProperties() *Values {
 	return &Values{
 		Dir:  home + "/.cpm/",
 		Name: ".cpm-conf",
-		Type: "yaml",
-	}
-}
-
-func GetTestConfigProperties(testName string) *Values {
-	_, b, _, _ := runtime.Caller(0)
-	d := path.Join(path.Dir(b))
-	projectDir := filepath.Dir(d)
-
-	return &Values{
-		Dir:  projectDir + "/tests/",
-		Name: testName,
 		Type: "yaml",
 	}
 }

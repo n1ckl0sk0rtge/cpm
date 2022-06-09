@@ -60,7 +60,7 @@ func info(_ *cobra.Command, args []string) {
 	metaData, err := exec.Command("sh", "-c", getImageInfosCommand).Output()
 
 	if err != nil {
-		e := fmt.Errorf("could not insepect image, check if image is availabe, %s", err)
+		e := fmt.Errorf("could not inspect image, check if image is available, %s", err)
 		fmt.Println(e)
 		return
 	}

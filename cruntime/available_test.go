@@ -8,9 +8,8 @@ import (
 )
 
 func TestAvailable(t *testing.T) {
-	test := "testAvailable"
-	_ = config.InitTestGlobalConfig(test)
-	defer config.RemoveTestGlobalConfig(test)
+	config.InitGlobalConfig()
+	defer config.RemoveGlobalConfig()
 
 	runtimeString := config.Instance.GetString(config.Runtime)
 

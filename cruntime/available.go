@@ -13,10 +13,7 @@ const (
 
 func Available() error {
 	socket := config.Instance.GetString(config.Socket)
-	connection, err := net.Dial("unix", socket)
-	defer func(connection net.Conn) {
-		_ = connection.Close()
-	}(connection)
+	_, err := net.Dial("unix", socket)
 
 	if err != nil {
 		return fmt.Errorf("container cruntime is not availabe. Please check and provide a valid cruntime")

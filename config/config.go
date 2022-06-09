@@ -51,18 +51,8 @@ func createConfFolder(location string) {
 	}
 }
 
-func InitTestGlobalConfig(name string) *Values {
-	config := GetTestConfigProperties(name)
-	structure := GetTestConfigStructure("podman", config.Dir)
-
-	createConfFolder(config.Dir)
-	initGlobalConfig(config, structure)
-	return config
-}
-
-func RemoveTestGlobalConfig(name string) {
-	values := GetTestConfigProperties(name)
-	if err := os.Remove(GetConfigFilePath(values)); err != nil {
+func RemoveGlobalConfig() {
+	if err := os.Remove(GetConfigFilePath(GetConfigProperties())); err != nil {
 		fmt.Println(err)
 	}
 }

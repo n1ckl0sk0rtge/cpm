@@ -15,11 +15,3 @@ func GetConfigStructure() *map[string]string {
 	config[Socket] = "/var/run/docker.sock"
 	return &config
 }
-
-func GetTestConfigStructure(runtime string, testExecPath string) *map[string]string {
-	config := make(map[string]string)
-	config[Runtime] = runtime
-	config[ExecPath] = testExecPath
-	config[Socket] = "/var/run/docker.sock"
-	return &config
-}

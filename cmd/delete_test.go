@@ -3,30 +3,30 @@ package cmd
 import (
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
 func TestDelete(t *testing.T) {
-	test := "testDelete"
-	conf := config.InitTestGlobalConfig(test)
-	defer config.RemoveTestGlobalConfig(test)
+	config.InitGlobalConfig()
+	defer config.RemoveGlobalConfig()
+
+	confStructure := *config.GetConfigStructure()
+	execPath := confStructure[config.ExecPath]
 
 	name := "busybox"
 	entity = flags{}
 	create(nil, []string{name, "busybox:latest"})
 
-	deletion(nil, []string{"busybox"})
-
-	filename, _ := filepath.Abs(config.GetConfigFilePath(conf))
-	yamlFile, err := ioutil.ReadFile(filename)
+	_, err := os.Stat(config.GetConfigProperties().Dir + name)
+	assert.NoError(t, err)
+	_, err = os.Stat(execPath + name)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "container: '{}'\npath: /Users/nkoertge/_projects/cpm/tests/\nruntime: podman\nsocket: /var/run/docker.sock\n", string(yamlFile))
+	deletion(nil, []string{"busybox"})
 
-	_, err = os.Stat(conf.Dir + name)
+	_, err = os.Stat(config.GetConfigProperties().Dir + name)
 	assert.Error(t, err)
-
+	_, err = os.Stat(execPath + name)
+	assert.Error(t, err)
 }
