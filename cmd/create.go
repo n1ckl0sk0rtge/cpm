@@ -70,7 +70,15 @@ func create(_ *cobra.Command, args []string) {
 	}
 
 	version := "latest"
-	if strings.Contains(image, ":") {
+	if strings.Contains(image, "@") {
+		parts := strings.Split(image, "@")
+		if len(parts) != 2 {
+			err := fmt.Errorf("provided image is not valid. Please check format")
+			fmt.Println(err)
+			return
+		}
+		image, version = parts[0], parts[1]
+	} else if strings.Contains(image, ":") {
 		parts := strings.Split(image, ":")
 		if len(parts) != 2 {
 			err := fmt.Errorf("provided image is not valid. Please check format")

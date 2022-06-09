@@ -83,7 +83,13 @@ func updateCommand(c string) {
 	}
 	commandConfig := *maybeCommandConfig
 
-	imageRef := commandConfig[command.Image] + ":" + commandConfig[command.Tag]
+	var imageRef string
+	if strings.Contains(commandConfig[command.Tag], "sha") {
+		fmt.Println("No updates for images referenced by digest. Skip")
+		return
+	} else {
+		imageRef = commandConfig[command.Image] + ":" + commandConfig[command.Tag]
+	}
 
 	helper.Dprintln(imageRef)
 

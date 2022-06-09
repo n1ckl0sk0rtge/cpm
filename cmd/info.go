@@ -6,10 +6,10 @@ import (
 	"github.com/n1ckl0sk0rtge/cpm/command"
 	"github.com/n1ckl0sk0rtge/cpm/config"
 	"github.com/n1ckl0sk0rtge/cpm/cruntime"
-	"github.com/n1ckl0sk0rtge/cpm/helper"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // infoCmd represents the info command
@@ -52,12 +52,15 @@ func info(_ *cobra.Command, args []string) {
 	}
 	commandConfig := *maybeCommandConfig
 
-	fullImage := commandConfig[command.Image] + ":" + commandConfig[command.Tag]
-	helper.Dprintln(fullImage)
+	var fullImage string
+	if strings.Contains(commandConfig[command.Tag], "sha") {
+		fullImage = commandConfig[command.Image] + "@" + commandConfig[command.Tag]
+	} else {
+		fullImage = commandConfig[command.Image] + ":" + commandConfig[command.Tag]
+	}
 
 	// get more infos about the image
-	getImageInfosCommand := fmt.Sprintf("%s image inspect %s", crun, fullImage)
-	metaData, err := exec.Command("sh", "-c", getImageInfosCommand).Output()
+	metaData, err := exec.Command(crun, "image", "inspect", fullImage).Output()
 
 	if err != nil {
 		e := fmt.Errorf("could not inspect image, check if image is available, %s", err)
@@ -68,7 +71,7 @@ func info(_ *cobra.Command, args []string) {
 	var imageReference string
 	imageReference, err = jsonparser.GetString(metaData, "[0]", "RepoTags", "[0]")
 	if err != nil {
-		fullImage = commandConfig[command.Image]
+		imageReference = commandConfig[command.Image]
 	}
 
 	// digest

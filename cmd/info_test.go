@@ -30,18 +30,25 @@ func TestInfo(t *testing.T) {
 	execPath := confStructure[config.ExecPath]
 
 	name := "busybox"
-	image := name + "@sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87"
+	digest := "sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87"
+
+	// remove side effects
+	// rm digest image
+	_, _ = exec.Command(config.Instance.GetString(config.Runtime), "image", "rm", name+"@"+digest).Output()
+	// rm latest image
+	_, _ = exec.Command(config.Instance.GetString(config.Runtime), "image", "rm", name+":latest").Output()
+
 	// download image
-	pullImage := exec.Command("sh", "-c", config.Instance.GetString(config.Runtime)+" pull "+image)
+	pullImage := exec.Command(config.Instance.GetString(config.Runtime), "pull", name+"@"+digest)
 	_, err := pullImage.CombinedOutput()
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("could not fetch image,", err)
 		t.Fail()
 	}
 
 	// create command
-	create(nil, []string{name, "busybox:latest"})
+	create(nil, []string{name, name + "@" + digest})
 	// remove command add the end
 	defer func() {
 		err := os.Remove(config.GetConfigProperties().Dir + name)
@@ -61,7 +68,7 @@ func TestInfo(t *testing.T) {
 	if err := cruntime.Available(); err != nil {
 		assert.Equal(t, "could not inspect image, check if image is available, exit status 1\n", output)
 	} else {
-		assert.Equal(t, "busybox\nimage:\t\tdocker.io/library/busybox:latest\ndigest:\t\tdocker.io/library/busybox@sha256:205a121ea8a7a142e5f1fdb9ad72c70ffc8e4a56efec5b70b78a93ebfdddae87\nsize:\t\t1464006 byte\nOS/Arch:\tlinux/amd64\n", output)
+		assert.Equal(t, "busybox\nimage:\t\tbusybox\ndigest:\t\tsha256:3fb5cabb64693474716b56fde1566e26c28b3ad4d0651abb08183ede272e11eb\nsize:\t\t1239756 byte\nOS/Arch:\tlinux/amd64\n", output)
 	}
 
 }
