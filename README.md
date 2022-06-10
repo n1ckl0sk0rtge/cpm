@@ -1,6 +1,6 @@
 <p align="center">
     <img  src=".github/cpm-logo.png"
-      width="284" border="0" alt="cpm" style="margin-top: 50px; margin-bottom: 50px">
+      width="400" border="0" alt="cpm">
 </p>
 
 [![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
