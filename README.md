@@ -1,4 +1,4 @@
-<p align="center">
+<p align="center" style="margin-top: 50px; margin-bottom: 50px">
     <img  src=".github/cpm-logo.png"
       width="284" border="0" alt="cpm">
 </p>
@@ -13,14 +13,12 @@
 > is not stable and may contain breaking changes.
 
 ## Install
-___
 
 ```shell
 go install github.com/n1ckl0sk0rtge/cpm
 ```
 
 ## What is cpm?
-___
 
 cpm is a command line tool for using container technology
 to run command line applications. Instead of installing, 
@@ -38,7 +36,6 @@ With cpm you can replace your local cli-tools with isolated
 OCI images and manage them in the same way as with other package managers.
 
 ## Create new cli-command
-___
 
 To create/install a new command, you must call the
 create option and specify the required parameters. The
@@ -56,7 +53,6 @@ cpm create golang@1.17 golang:1.17-stretch -p '-rm -i -t -v "$PWD":/usr/src/app 
 ```
 
 ## Configuration
-___
 
 The following options can be configured globally for cpm:
 
