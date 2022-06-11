@@ -35,7 +35,7 @@ operating system. It supports:
 With cpm you can replace your local cli-tools with isolated
 OCI images and manage them in the same way as with other package managers.
 
-## Create new cli-command
+## Create new cli-commands
 
 To create/install a new command, you must call the
 create option and specify the required parameters. The
@@ -52,7 +52,7 @@ cpm create redis-cli redis:latest -c redis-cli
 cpm create golang@1.17 golang:1.17-stretch -p '-rm -i -t -v "$PWD":/usr/src/app -w /usr/src/app' -c go
 ```
 
-## Configuration
+## Configure
 
 The following options can be configured globally for cpm:
 
@@ -68,3 +68,21 @@ The values can be changed by the following command:
 ```shell
 cpm config set PROPERTY_NAME PROPERTY_VALUE 
 ```
+
+## Testing
+
+To test cpm, there is a Dockerfile in the `tests` folder that creates the necessary 
+test environment. To create the environment/image `cpm-testenvironment:latest` run 
+the following command:
+```shell
+make testenv
+```
+This environment uses docker-in-docker to run the tests in isolation.
+
+Now you can run the go tests for cpm in this environment by executing the following command:
+```shell
+make tests
+```
+
+___
+[Apache 2.0 License](LICENSE) © Nicklas Körtge
