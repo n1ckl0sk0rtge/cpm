@@ -14,6 +14,15 @@
 
 ## Install
 
+### Homebrew
+
+```shell
+brew tap n1ckl0sk0rtge/n1ckl0sk0rtge
+brew install n1ckl0sk0rtge/n1ckl0sk0rtge/cpm
+```
+
+### Install with go
+
 ```shell
 go install github.com/n1ckl0sk0rtge/cpm
 ```
