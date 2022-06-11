@@ -6,5 +6,5 @@ release:
 	go build
 testenv:
 	docker build -f tests/testEnvironment.Dockerfile -t cpm-testenvironment:latest .
-test:
+tests:
 	docker run --privileged --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}:/app cpm-testenvironment:latest

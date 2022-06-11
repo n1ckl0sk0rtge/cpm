@@ -68,3 +68,18 @@ The values can be changed by the following command:
 ```shell
 cpm config set PROPERTY_NAME PROPERTY_VALUE 
 ```
+
+## Test cpm
+
+To test cpm, there is a Dockerfile in the `tests` folder that creates the necessary 
+test environment. To create the environment/image `cpm-testenvironment:latest` run 
+the following command:
+```shell
+make testenv
+```
+This environment uses docker-in-docker to run the tests in isolation.
+
+Now you can run the go tests for cpm in this environment by executing the following command:
+```shell
+make tests
+```
