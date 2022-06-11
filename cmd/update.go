@@ -17,8 +17,14 @@ import (
 var updateCmd = &cobra.Command{
 	Use:   "update [command]",
 	Args:  cobra.MaximumNArgs(1),
-	Short: "A brief description of your command",
-	Long:  `A longer description that spans multiple`,
+	Short: "Update a specific or all images related to commands",
+	Long: `
+Update a specific or all images related to commands.
+
+If you not set a specific command to update, all images will be updated to
+the latest version. That will only include images with a tag that could change
+over time. In case an image is referenced by digest it will not be updated.
+`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if err := cruntime.Available(); err != nil {

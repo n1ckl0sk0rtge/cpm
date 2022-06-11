@@ -17,7 +17,7 @@ import (
 var createCmd = &cobra.Command{
 	Use:   "create NAME IMAGE",
 	Args:  cobra.ExactArgs(2),
-	Short: "A brief description of your command",
+	Short: "Create a new command",
 	Long: `
 Create a new command.
 
@@ -45,13 +45,13 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 
 	createCmd.Flags().StringVarP(&entity.Tag, "tag", "t", "",
-		"set a version (image-tag) for the nwe command")
+		"set a version (image-tag) for the new command")
 
 	createCmd.Flags().StringVarP(&entity.Parameter, "parameter", "p", "-i -t --rm",
 		"set parameter for running the container. Default is '-t -i --rm'")
 
 	createCmd.Flags().StringVarP(&entity.Command, "command", "c", "",
-		"set the command that should be executed in the container")
+		"set a command that should be executed in the container")
 }
 
 func create(_ *cobra.Command, args []string) {

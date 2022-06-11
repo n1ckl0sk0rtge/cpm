@@ -11,9 +11,13 @@ import (
 var deleteCmd = &cobra.Command{
 	Use:   "delete COMMAND",
 	Args:  cobra.ExactArgs(1),
-	Short: "A brief description of your command",
-	Long:  `A longer description that spans multiple lines`,
-	Run:   deletion,
+	Short: "Delete an existing command",
+	Long: `
+Delete an existing command
+
+ COMMAND is the name for the command you want to remove.
+`,
+	Run: deletion,
 }
 
 func init() {

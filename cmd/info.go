@@ -16,8 +16,12 @@ import (
 var infoCmd = &cobra.Command{
 	Use:   "info COMMAND",
 	Args:  cobra.ExactArgs(1),
-	Short: "A brief description of your command",
-	Long:  `A longer description that spans multiple`,
+	Short: "Show information about a command",
+	Long: `
+Show information about the used image and the tag/digest for a specific command.
+
+ COMMAND is the name for the command you want to get information for.
+`,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if err := cruntime.Available(); err != nil {
