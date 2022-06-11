@@ -58,7 +58,8 @@ following parameters can be configured:
 Examples:
 ```shell
 cpm create redis-cli redis:latest -c redis-cli
-cpm create golang@1.17 golang:1.17-stretch -p '-rm -i -t -v "$PWD":/usr/src/app -w /usr/src/app' -c go
+
+cpm create go@1.17 golang:1.17-stretch -p '--rm -i -t -v ${PWD}:/usr/src/app -w /usr/src/app' -c go
 ```
 
 ## Configure
