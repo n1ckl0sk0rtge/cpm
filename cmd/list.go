@@ -13,9 +13,11 @@ import (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Args:  cobra.ExactArgs(0),
-	Short: "A brief description of your command",
-	Long:  `A longer description that spans`,
-	Run:   list,
+	Short: "List all existing commands",
+	Long: `
+List all existing commands created by cpm.
+`,
+	Run: list,
 }
 
 func init() {
