@@ -1,0 +1,34 @@
+builds:
+  - binary: cpm
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -mod=vendor
+
+release:
+  prerelease: auto
+
+universal_binaries:
+  - replace: true
+
+brews:
+  - name: cpm
+    homepage: https://github.com/n1ckl0sk0rtge/cpm
+    description: "cpm is a command line tool for using container technology to run command line applications."
+    license: "Apache 2.0"
+    tap:
+      owner: n1ckl0sk0rtge
+      name: homebrew-n1ckl0sk0rtge
+    commit_author:
+      name: n1ckl0sk0rtge
+      email: nicklas.koertge@protonmail.com
+
+checksum:
+  name_template: 'checksums.txt'
